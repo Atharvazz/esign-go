@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: esign-postgres
+    environment:
+      POSTGRES_USER: esign_user
+      POSTGRES_PASSWORD: esign_password
+      POSTGRES_DB: esign_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - esign-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esign_user -d esign_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  esign-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: esign-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - ENVIRONMENT=production
+      - ESIGN_DATABASE_HOST=postgres
+      - ESIGN_DATABASE_PORT=5432
+      - ESIGN_DATABASE_USER=esign_user
+      - ESIGN_DATABASE_PASSWORD=esign_password
+      - ESIGN_DATABASE_DBNAME=esign_db
+      - ESIGN_SECURITY_JWTSECRET=your-secret-key-here
+      - ESIGN_UIDAI_LICENSEKEY=your-license-key
+      - LOG_LEVEL=info
+    volumes:
+      - ./configs:/app/configs:ro
+      - ./certs:/app/certs:ro
+      - ./logs:/app/logs
+      - ./custom-templates:/app/custom-templates:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - esign-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: esign-nginx
+    depends_on:
+      - esign-service
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - esign-network
+    restart: unless-stopped
+
+networks:
+  esign-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -1,0 +1,96 @@
+# eSign Service Configuration
+
+app:
+  name: "eSign Service"
+  environment: "development"  # development, staging, production
+  build: "1.0.0"
+  debug: true
+
+server:
+  address: ":8080"
+  readTimeout: "30s"
+  writeTimeout: "30s"
+  idleTimeout: "120s"
+  contextPath: "/esign"
+
+database:
+  host: "localhost"
+  port: 5432
+  user: "esign_user"
+  password: "esign_password"
+  dbname: "esign_db"
+  sslMode: "disable"
+  maxOpenConns: 25
+  maxIdleConns: 25
+  maxLifetime: "15m"
+
+security:
+  jwtSecret: "your-secret-key-here"
+  signingCertPath: "/app/esign/certs/signing.crt"
+  signingKeyPath: "/app/esign/certs/signing.key"
+  encryptionCertPath: "/app/esign/certs/encryption.crt"
+  encryptionKeyPath: "/app/esign/certs/encryption.key"
+  trustedCertsPath: "/app/esign/certs/trusted/"
+  passwordSalt: "your-salt-here"
+  sessionTimeout: "30m"
+  maxAuthAttempts: 3
+
+uidai:
+  authURL: "https://auth.uidai.gov.in/auth/2.0"
+  otpAuthURL: "https://auth.uidai.gov.in/otp/2.0"
+  ekycAuthURL: "https://auth.uidai.gov.in/ekyc/2.0"
+  biometricEnv: "pre-production"
+  licenseKey: "your-license-key"
+  subAUA: "your-sub-aua-code"
+  authVersion: "2.0"
+  timeout: "30s"
+  publicKey: |
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
+    -----END PUBLIC KEY-----
+
+templates:
+  path: "/app/esign/templates"
+  cacheTemplates: true
+
+rateLimit:
+  enabled: true
+  esignDoc:
+    rate: 10      # requests per duration
+    burst: 20     # max burst
+    duration: "1m"
+  otp:
+    rate: 5
+    burst: 10
+    duration: "1m"
+  default:
+    rate: 100
+    burst: 200
+    duration: "1m"
+
+cors:
+  allowedOrigins:
+    - "*"
+  allowedMethods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "DELETE"
+    - "OPTIONS"
+  allowedHeaders:
+    - "*"
+  exposedHeaders:
+    - "X-Request-ID"
+    - "X-RateLimit-Limit"
+    - "X-RateLimit-Remaining"
+    - "X-RateLimit-Reset"
+  allowCredentials: true
+  maxAge: "12h"
+
+logging:
+  level: "debug"  # debug, info, warn, error
+  format: "json"  # json, text
+  outputPath: "stdout"
+  errorOutputPath: "stderr"
+  requestLogging: true
+  xmlLogging: false  # Set to true to log XML requests/responses

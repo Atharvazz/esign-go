@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eSign Successful</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 50px;
+        }
+        .success-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .success-icon {
+            font-size: 72px;
+            color: #28a745;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .success-message {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 25px;
+        }
+        .details-box {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .detail-row {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .countdown {
+            text-align: center;
+            color: #6c757d;
+            margin-top: 20px;
+        }
+        .document-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-container">
+            <div class="success-icon">
+                ✓
+            </div>
+            
+            <div class="success-message">
+                <h4 class="mb-2">Documents Signed Successfully!</h4>
+                <p class="mb-0">Your documents have been digitally signed and are ready for use.</p>
+            </div>
+
+            <div class="details-box">
+                <h5 class="mb-3">Transaction Details</h5>
+                
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-4 detail-label">Transaction ID:</div>
+                        <div class="col-8">{{.response.RequestID}}</div>
+                    </div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-4 detail-label">Status:</div>
+                        <div class="col-8">
+                            <span class="badge bg-success">{{.response.Status}}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-4 detail-label">Timestamp:</div>
+                        <div class="col-8">{{.response.Timestamp.Format "02 Jan 2006, 03:04 PM"}}</div>
+                    </div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="row">
+                        <div class="col-4 detail-label">Documents Signed:</div>
+                        <div class="col-8">{{len .response.SignedDocs}}</div>
+                    </div>
+                </div>
+            </div>
+
+            {{if .response.SignedDocs}}
+            <div class="details-box">
+                <h5 class="mb-3">Signed Documents</h5>
+                <div class="document-list">
+                    {{range .response.SignedDocs}}
+                    <div class="detail-row">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold">{{.Name}}</div>
+                                <small class="text-muted">ID: {{.ID}}</small>
+                            </div>
+                            <div>
+                                <small class="text-success">✓ Signed</small>
+                            </div>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+
+            <div class="countdown">
+                <p>You will be redirected in <span id="countdown">5</span> seconds...</p>
+                <p class="mt-2">
+                    <a href="{{.redirectUrl}}" class="btn btn-primary">Continue Now</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Countdown and redirect
+        let timeLeft = 5;
+        const countdownElement = document.getElementById('countdown');
+        const redirectUrl = '{{.redirectUrl}}';
+        
+        const countdown = setInterval(() => {
+            timeLeft--;
+            countdownElement.textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                }
+            }
+        }, 1000);
+        
+        // Send response data to parent window if in iframe
+        if (window.parent !== window) {
+            window.parent.postMessage({
+                type: 'esign-success',
+                data: {
+                    status: '{{.response.Status}}',
+                    requestId: '{{.response.RequestID}}',
+                    certificate: '{{.response.Certificate}}',
+                    signedDocs: {{.response.SignedDocs}}
+                }
+            }, '*');
+        }
+    </script>
+</body>
+</html>
