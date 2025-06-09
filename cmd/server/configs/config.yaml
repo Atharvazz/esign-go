@@ -1,0 +1,142 @@
+app:
+  name: "eSign Service"
+  environment: "development"
+  build: "1.0.0"
+  debug: true
+
+server:
+  address: ":8080"
+  readTimeout: "30s"
+  writeTimeout: "30s"
+  idleTimeout: "120s"
+  version: "1.0.0"
+  environment: "development"
+  requestTimeout: 30
+
+database:
+  host: "localhost"
+  port: 5432
+  user: "esign"
+  password: "esign123"
+  dbName: "esign_db"
+  sslMode: "disable"
+  maxOpenConns: 25
+  maxIdleConns: 25
+  maxLifetime: "15m"
+
+security:
+  sessionTimeout: "30m"
+  maxAuthAttempts: 3
+  jwtSecret: "your-secret-key-change-this-in-production"
+  sessionSecret: "your-session-secret-change-this"
+  csrfEnabled: true
+  allowedOrigins:
+    - "*"
+  trustedProxies:
+    - "127.0.0.1"
+  maxUploadSize: 10485760  # 10MB
+  xmlMaxSize: 5242880      # 5MB
+
+uidai:
+  authUrl: "https://auth.uidai.gov.in"
+  otpUrl: "https://otp.uidai.gov.in"
+  ekycUrl: "https://ekyc.uidai.gov.in"
+  subAua: "your-sub-aua-code"
+  licenseKey: "your-license-key"
+  publicKey: "/path/to/uidai/public/key"
+  privateKey: "/path/to/uidai/private/key"
+  certificate: "/path/to/uidai/certificate"
+  timeout: 30
+
+templates:
+  path: "./templates"
+  cacheEnabled: true
+  cacheTimeout: "1h"
+
+rateLimit:
+  enabled: true
+  esignDoc:
+    rate: 10
+    burst: 20
+    period: "1m"
+    duration: "1m"
+  checkStatus:
+    rate: 20
+    burst: 40
+    period: "1m"
+  otp:
+    rate: 5
+    burst: 10
+    duration: "1m"
+  default:
+    rate: 100
+    burst: 200
+    duration: "1m"
+
+cors:
+  allowedOrigins:
+    - "*"
+  allowedMethods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "DELETE"
+    - "OPTIONS"
+  allowedHeaders:
+    - "*"
+  allowCredentials: true
+  maxAge: "12h"
+
+logging:
+  level: "info"
+  format: "json"
+  outputPath: "stdout"
+  errorOutputPath: "stderr"
+  requestLogging: true
+  xmlLogging: false
+
+debug:
+  logRequests: true
+  logResponses: true
+  prettyPrint: true
+  skipXMLVerify: false
+  logLevel: "debug"
+
+biometric:
+  environment: "test"
+  responseURL: "http://localhost:8080/authenticate/postRequestdata"
+  consentText: "I agree to use my biometric data for authentication"
+
+auth:
+  maxAttempts: 3
+  otpRetryAttempts: 3
+  sessionTimeout: 1800  # 30 minutes in seconds
+  allowedAuthModes:
+    - "otp"
+    - "biometric"
+    - "iris"
+
+checkStatus:
+  enabled: true
+  allowedASPs:
+    - "ASP001"
+    - "ASP002"
+    - "TEST_ASP"
+
+# Redis configuration (for session storage)
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+  maxRetries: 3
+  poolSize: 10
+  readTimeout: 3
+
+# ESP service configuration
+esp:
+  baseUrl: "http://localhost:8090"
+  healthPath: "/health"
+  timeout: 30
+  retryCount: 3
+  retryDelay: 1

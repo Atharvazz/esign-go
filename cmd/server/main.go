@@ -12,9 +12,11 @@ import (
 	"github.com/esign-go/internal/config"
 	"github.com/esign-go/internal/controller"
 	"github.com/esign-go/internal/middleware"
+	"github.com/esign-go/internal/models"
 	"github.com/esign-go/internal/repository"
 	"github.com/esign-go/internal/service"
 	"github.com/esign-go/pkg/logger"
+	"github.com/esign-go/pkg/xmlparser"
 	"github.com/gin-gonic/gin"
 )
 
@@ -42,17 +44,84 @@ func main() {
 
 	// Initialize repositories
 	esignRepo := repository.NewEsignRepository(db)
-	auditRepo := repository.NewAuditRepository(db)
 	aspRepo := repository.NewASPRepository(db)
 
 	// Initialize services
-	xmlValidator := service.NewXMLValidator()
-	cryptoService := service.NewCryptoService(cfg.Security)
-	templateService := service.NewTemplateService(cfg.Templates.Path)
-	esignService := service.NewEsignService(esignRepo, auditRepo, aspRepo, xmlValidator, cryptoService, cfg)
+	xmlValidator := xmlparser.NewXMLValidator()
 	
+	// Load test keys for development - in production load from config
+	privateKey, err := os.ReadFile("test-keys/private.key")
+	if err != nil {
+		log.Printf("Warning: Failed to load private key: %v", err)
+		privateKey = []byte{}
+	}
+	
+	certificate, err := os.ReadFile("test-keys/certificate.crt")
+	if err != nil {
+		log.Printf("Warning: Failed to load certificate: %v", err)
+		certificate = []byte{}
+	}
+	
+	cryptoService, err := service.NewCryptoService(privateKey, certificate)
+	if err != nil {
+		log.Fatalf("Failed to create crypto service: %v", err)
+	}
+	templateService := service.NewTemplateService(cfg.Templates.Path)
+	
+	// Create remote signing service
+	// Load CA keys for development - in production load from config
+	caCert, err := os.ReadFile("test-keys/ca-certificate.crt")
+	if err != nil {
+		log.Printf("Warning: Failed to load CA certificate: %v", err)
+		caCert = []byte{}
+	}
+	
+	caKey, err := os.ReadFile("test-keys/ca-private.key")
+	if err != nil {
+		log.Printf("Warning: Failed to load CA private key: %v", err)
+		caKey = []byte{}
+	}
+	
+	remoteSigningService, err := service.NewRemoteSigningService(cryptoService, esignRepo, caCert, caKey)
+	if err != nil {
+		log.Printf("Warning: Failed to create remote signing service: %v", err)
+		// Create a basic instance for development
+		remoteSigningService = &service.RemoteSigningService{}
+	}
+	
+	// Convert config.Config to models.Config
+	modelConfig := &models.Config{
+		BiometricEnv:         cfg.Biometric.Environment,
+		BiometricResponseURL: cfg.Biometric.ResponseURL,
+		ConsentText:          cfg.Biometric.ConsentText,
+		AuthAttempts:         cfg.Auth.MaxAttempts,
+		OTPRetryAttempts:     cfg.Auth.OTPRetryAttempts,
+		Build:                cfg.Server.Version,
+		Environment:          cfg.Server.Environment,
+		RequestTimeout:       cfg.Server.RequestTimeout,
+		CheckStatusASPs:      cfg.CheckStatus.AllowedASPs,
+	}
+	
+	// Set RateLimit struct
+	modelConfig.RateLimit.EsignDoc = cfg.RateLimit.EsignDoc.Rate
+	modelConfig.RateLimit.CheckStatus = cfg.RateLimit.CheckStatus.Rate
+	modelConfig.RateLimit.Enabled = cfg.RateLimit.Enabled
+	modelConfig.RateLimit.WindowSize = 60
+	modelConfig.RateLimit.FallbackEnabled = false
+	
+	// Set Debug struct
+	modelConfig.Debug.LogLevel = "info"
+	modelConfig.Debug.LogRequests = cfg.Debug.LogRequests
+	modelConfig.Debug.LogResponses = cfg.Debug.LogResponses
+	
+	esignService := service.NewEsignService(esignRepo, aspRepo, xmlValidator, cryptoService, remoteSigningService, remoteSigningService, modelConfig)
+	kycService := service.NewKYCService(modelConfig, cryptoService)
+	
+	// Create session service
+	sessionService := service.NewSessionService(nil, "esign", 3600)
+
 	// Initialize rate limiter
-	rateLimiter := middleware.NewRateLimiter(cfg.RateLimit)
+	rateLimiter := middleware.NewRateLimiter(cfg.RateLimit.Enabled)
 
 	// Initialize Gin router
 	router := gin.New()
@@ -68,22 +137,30 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 
 	// Initialize controllers
-	authController := controller.NewAuthenticateController(esignService, templateService, cfg)
+	authController := controller.NewAuthenticateController(esignService, kycService, templateService, sessionService, modelConfig)
 
 	// Routes
 	api := router.Group("/authenticate")
 	{
 		// Apply rate limiting to esign-doc endpoint
-		api.POST("/esign-doc", 
-			rateLimiter.Middleware("esign-doc", cfg.RateLimit.EsignDoc),
+		api.POST("/esign-doc",
+			rateLimiter.Middleware("esign-doc", middleware.RateLimitRule{
+				Rate:     cfg.RateLimit.EsignDoc.Rate,
+				Duration: cfg.RateLimit.EsignDoc.Period,
+			}),
 			authController.EsignDoc,
 		)
-		
-		api.POST("/es", authController.Es)
-		api.POST("/otp-request", authController.OTPRequest)
-		api.POST("/validate-otp", authController.ValidateOTP)
-		api.GET("/status/:txnId", authController.CheckStatus)
-		api.POST("/callback", authController.Callback)
+
+		api.POST("/es", authController.ProcessEsign)
+		api.POST("/otp", authController.GenerateOTP)
+		api.POST("/otpAction", authController.VerifyOTP)
+		api.GET("/auth-ra", authController.AuthRA)
+		api.GET("/es-ra", authController.EsignRedirect)
+		api.POST("/postRequestdata", authController.BiometricAuth)
+		api.POST("/esignCancel", authController.CancelEsign)
+		api.GET("/sigError", authController.SignatureError)
+		api.POST("/check-status", authController.CheckStatus)
+		api.POST("/check-status-api", authController.CheckStatusAPI)
 	}
 
 	// Health check endpoint
