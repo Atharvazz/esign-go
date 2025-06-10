@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Esign ver="2.1" sc="Y" ts="2025-06-10T06:25:01Z" txn="TEST-001" 
+       aspId="TEST001" 
+       AuthMode="1" responseSigType="pkcs7" 
+       preVerified="n" organizationFlag="n" 
+       responseUrl="http://localhost:8080/callback">
+    <Docs>
+        <InputHash id="1" hashAlgorithm="SHA256" docInfo="Test Document">a5f3c6d7e8b9a0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5</InputHash>
+    </Docs>
+</Esign>

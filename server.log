@@ -1,0 +1,497 @@
+2025/06/10 11:54:34 Working Directory: /Users/atharvaz/Documents/ESIGN_FINAL/esign-go/cmd/server
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (6 handlers)
+[GIN-debug] HEAD   /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (6 handlers)
+2025/06/10 11:54:34 Loading templates from: /Users/atharvaz/Documents/ESIGN_FINAL/esign-go/templates/*
+2025/06/10 11:54:34 Found 17 template files:
+2025/06/10 11:54:34   - auth.html
+2025/06/10 11:54:34   - authExpired.html
+2025/06/10 11:54:34   - authFail.html
+2025/06/10 11:54:34   - auth_biometric.html
+2025/06/10 11:54:34   - auth_biometric_iris.html
+2025/06/10 11:54:34   - auth_okyc.html
+2025/06/10 11:54:34   - error.html
+2025/06/10 11:54:34   - esign-cancel.html
+2025/06/10 11:54:34   - esign-cancelled.html
+2025/06/10 11:54:34   - esign-failed.html
+2025/06/10 11:54:34   - esign-success.html
+2025/06/10 11:54:34   - esignFailed.html
+2025/06/10 11:54:34   - otp_auth.html
+2025/06/10 11:54:34   - otp_input.html
+2025/06/10 11:54:34   - rd.html
+2025/06/10 11:54:34   - sigError.html
+2025/06/10 11:54:34   - success.html
+[GIN-debug] Loaded HTML Templates (18): 
+	- authExpired.html
+	- auth_biometric.html
+	- otp_auth.html
+	- otp_input.html
+	- sigError.html
+	- success.html
+	- 
+	- auth_okyc.html
+	- error.html
+	- esign-cancel.html
+	- esign-cancelled.html
+	- esignFailed.html
+	- rd.html
+	- auth.html
+	- authFail.html
+	- auth_biometric_iris.html
+	- esign-failed.html
+	- esign-success.html
+
+[GIN-debug] POST   /authenticate/esign-doc   --> github.com/esign-go/internal/controller.(*AuthenticateController).EsignDoc-fm (7 handlers)
+[GIN-debug] POST   /authenticate/es          --> github.com/esign-go/internal/controller.(*AuthenticateController).ProcessEsign-fm (6 handlers)
+[GIN-debug] POST   /authenticate/otp         --> github.com/esign-go/internal/controller.(*AuthenticateController).GenerateOTP-fm (6 handlers)
+[GIN-debug] POST   /authenticate/otpAction   --> github.com/esign-go/internal/controller.(*AuthenticateController).VerifyOTP-fm (6 handlers)
+[GIN-debug] GET    /authenticate/auth-ra     --> github.com/esign-go/internal/controller.(*AuthenticateController).AuthRA-fm (6 handlers)
+[GIN-debug] GET    /authenticate/es-ra       --> github.com/esign-go/internal/controller.(*AuthenticateController).EsignRedirect-fm (6 handlers)
+[GIN-debug] POST   /authenticate/postRequestdata --> github.com/esign-go/internal/controller.(*AuthenticateController).BiometricAuth-fm (6 handlers)
+[GIN-debug] POST   /authenticate/esignCancel --> github.com/esign-go/internal/controller.(*AuthenticateController).CancelEsign-fm (6 handlers)
+[GIN-debug] GET    /authenticate/sigError    --> github.com/esign-go/internal/controller.(*AuthenticateController).SignatureError-fm (6 handlers)
+[GIN-debug] POST   /authenticate/check-status --> github.com/esign-go/internal/controller.(*AuthenticateController).CheckStatus-fm (6 handlers)
+[GIN-debug] POST   /authenticate/check-status-api --> github.com/esign-go/internal/controller.(*AuthenticateController).CheckStatusAPI-fm (6 handlers)
+[GIN-debug] GET    /health                   --> main.main.func1 (6 handlers)
+[GIN-debug] GET    /debug/templates          --> main.main.func2 (6 handlers)
+[GIN-debug] GET    /debug/info               --> main.main.func3 (6 handlers)
+[36mINFO[0m[2025-06-10 11:54:34.963] Starting server on :8080                      [36mcaller[0m="main_debug.go:249"
+[36mINFO[0m[2025-06-10 11:54:47.589] HTTP 2xx: {"client_ip":"::1","latency":"122.125µs","latency_ms":0,"method":"GET","path":"/health","request_id":"5d5d8d14-7175-475c-867a-729753f5cd6b","status":200,"user_agent":"curl/8.7.1"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:54:56 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:54:56 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:54:56 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:54:56 Replacement: "otp":"******"
+2025/06/10 11:54:56 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:54:56 Replacement: "password":"******"
+2025/06/10 11:54:56 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:54:56 Replacement: "privateKey":"******"
+2025/06/10 11:54:56 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:54:56 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-10 11:54:56.428] req_start_authAndEkyc                         [36mrequest_id[0m=878e7d82-0b4f-4bbd-8b0b-7c4cbcf19ace
+[37mDEBU[0m[2025-06-10 11:54:56.428] Received esign request                        [37mmsg_length[0m=608
+[37mDEBU[0m[2025-06-10 11:54:56.428] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:54:56.428] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-10 11:54:56.428] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-10T06:24:56Z\" txn=\"TEST-0"
+[37mDEBU[0m[2025-06-10 11:54:56.428] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-001
+[37mDEBU[0m[2025-06-10 11:54:56.433] Validating request timestamp                  [37mallowed_range[0m="[-30, 30] minutes" [37mcurrent_time[0m="2025-06-10T11:54:56+05:30" [37mdiff_seconds[0m=0.433737 [37mparsed_time[0m="2025-06-10T06:24:56Z" [37mrequest_timestamp[0m="2025-06-10T06:24:56Z" [37mtimeout_minutes[0m=30
+[36mINFO[0m[2025-06-10 11:54:56.442] req_end_authAndEkyc                           [36mrequest_id[0m=878e7d82-0b4f-4bbd-8b0b-7c4cbcf19ace
+[36mINFO[0m[2025-06-10 11:54:56.442] HTTP 3xx: {"client_ip":"::1","latency":"14.351959ms","latency_ms":14,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMTBUMDY6MjQ6NTZaIiB0eG49IlRFU1QtMDAxIiAKICAgICAgIGFzcElkPSJURVNUMDAxIiAKICAgICAgIEF1dGhNb2RlPSIxIiByZXNwb25zZVNpZ1R5cGU9InBrY3M3IiAKICAgICAgIHByZVZlcmlmaWVkPSJuIiBvcmdhbml6YXRpb25GbGFnPSJuIiAKICAgICAgIHJlc3BvbnNlVXJsPSJodHRwOi8vbG9jYWxob3N0OjgwODAvY2FsbGJhY2siPgogICAgPERvY3M%2BCiAgICAgICAgPElucHV0SGFzaCBpZD0iMSIgaGFzaEFsZ29yaXRobT0iU0hBMjU2IiBkb2NJbmZvPSJUZXN0IERvY3VtZW50Ij5hNWYzYzZkN2U4YjlhMGMxZDJlM2Y0YTViNmM3ZDhlOWYwYTFiMmMzZDRlNWY2YTdiOGM5ZDBlMWYyYTNiNGM1PC9JbnB1dEhhc2g%2BCiAgICA8L0RvY3M%2BCjwvRXNpZ24%2BCg%3D%3D","request_id":"adba678d-7c8f-482e-9b0d-e5b592613ffa","status":302,"user_agent":"curl/8.7.1"}  [36mcaller[0m="logger.go:101"
+2025/06/10 11:55:02 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:55:02 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:55:02 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:55:02 Replacement: "otp":"******"
+2025/06/10 11:55:02 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:55:02 Replacement: "password":"******"
+2025/06/10 11:55:02 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:55:02 Replacement: "privateKey":"******"
+2025/06/10 11:55:02 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:55:02 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-10 11:55:02.017] req_start_authAndEkyc                         [36mrequest_id[0m=f9ca2e1d-d1f8-438d-b292-54e84e6359cc
+[37mDEBU[0m[2025-06-10 11:55:02.017] Received esign request                        [37mmsg_length[0m=608
+[37mDEBU[0m[2025-06-10 11:55:02.017] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:55:02.017] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-10 11:55:02.017] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-10T06:25:01Z\" txn=\"TEST-0"
+[37mDEBU[0m[2025-06-10 11:55:02.017] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-001
+[36mINFO[0m[2025-06-10 11:55:02.018] ===RESUBMIT_OCCURRED===                      
+[36mINFO[0m[2025-06-10 11:55:02.018] req_end_authAndEkyc                           [36mrequest_id[0m=f9ca2e1d-d1f8-438d-b292-54e84e6359cc
+[36mINFO[0m[2025-06-10 11:55:02.018] HTTP 3xx: {"client_ip":"::1","latency":"1.519458ms","latency_ms":1,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMTBUMDY6MjU6MDFaIiB0eG49IlRFU1QtMDAxIiAKICAgICAgIGFzcElkPSJURVNUMDAxIiAKICAgICAgIEF1dGhNb2RlPSIxIiByZXNwb25zZVNpZ1R5cGU9InBrY3M3IiAKICAgICAgIHByZVZlcmlmaWVkPSJuIiBvcmdhbml6YXRpb25GbGFnPSJuIiAKICAgICAgIHJlc3BvbnNlVXJsPSJodHRwOi8vbG9jYWxob3N0OjgwODAvY2FsbGJhY2siPgogICAgPERvY3M%2BCiAgICAgICAgPElucHV0SGFzaCBpZD0iMSIgaGFzaEFsZ29yaXRobT0iU0hBMjU2IiBkb2NJbmZvPSJUZXN0IERvY3VtZW50Ij5hNWYzYzZkN2U4YjlhMGMxZDJlM2Y0YTViNmM3ZDhlOWYwYTFiMmMzZDRlNWY2YTdiOGM5ZDBlMWYyYTNiNGM1PC9JbnB1dEhhc2g%2BCiAgICA8L0RvY3M%2BCjwvRXNpZ24%2BCg%3D%3D","request_id":"e3eae0aa-7c79-455b-ac4e-3cb337286965","status":302,"user_agent":"curl/8.7.1"}  [36mcaller[0m="logger.go:101"
+[36mINFO[0m[2025-06-10 11:55:43.754] HTTP 2xx: {"client_ip":"::1","latency":"374.208µs","latency_ms":0,"method":"GET","path":"/health","request_id":"1d706b6f-6c04-4392-b099-9ab75ea4aeb8","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:55:56 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:55:56 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:55:56 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:55:56 Replacement: "otp":"******"
+2025/06/10 11:55:56 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:55:56 Replacement: "password":"******"
+2025/06/10 11:55:56 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:55:56 Replacement: "privateKey":"******"
+2025/06/10 11:55:56 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:55:56 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-10 11:55:56.972] req_start_authAndEkyc                         [36mrequest_id[0m=5ea2f70b-a20d-4bdb-8f43-f17baffb40c2
+[37mDEBU[0m[2025-06-10 11:55:56.972] Received esign request                        [37mmsg_length[0m=0
+[37mDEBU[0m[2025-06-10 11:55:56.972] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:55:56.973] Decoded base64 XML                           
+[31mERRO[0m[2025-06-10 11:55:56.973] XSD validation failed                         [31merror[0m="no root element found"
+[37mDEBU[0m[2025-06-10 11:55:56.973] Creating error response                       [37mext_code[0m=ESP-102 [37mint_code[0m=ESP-102 [37mmessage[0m="Invalid request format"
+[36mINFO[0m[2025-06-10 11:55:56.983] req_end_authAndEkyc                           [36mrequest_id[0m=5ea2f70b-a20d-4bdb-8f43-f17baffb40c2
+[36mINFO[0m[2025-06-10 11:55:56.983] HTTP 2xx: {"client_ip":"::1","latency":"10.776709ms","latency_ms":10,"method":"POST","path":"/authenticate/esign-doc","request_body":"aspTxnId=TEST-1749536745418\u0026eSignRequest=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMTBUMDY6MjU6NTMiIHR4bj0iVEVTVC0xNzQ5NTM2NzQ1NDE4IiAKICAgICAgIGVreWNJZFR5cGU9IkEiIGVreWNJZD0iOTk5OTk5OTkwMDE5IiBhc3BJZD0iVEVTVDAwMSIgCiAgICAgICBBdXRoTW9kZT0iMSIgcmVzcG9uc2VTaWdUeXBlPSJwa2NzNyIgCiAgICAgICBwcmVWZXJpZmllZD0ibiIgb3JnYW5pemF0aW9uRmxhZz0ibiIgCiAgICAgICByZXNwb25zZVVybD0iaHR0cDovL2xvY2FsaG9zdDo4MDkwL2NhbGxiYWNrIj4KICAgIDxEb2NzPgogICAgICAgIDxJbnB1dEhhc2ggaWQ9IjEiIGhhc2hBbGdvcml0aG09IlNIQTI1NiIgZG9jSW5mbz0iRG9jdW1lbnQgMSI%2BCiAgICAgICAgICAgIGE1ZjNjNmQ3ZThiOWEwYzFkMmUzZjRhNWI2YzdkOGU5ZjBhMWIyYzNkNGU1ZjZhN2I4YzlkMGUxZjJhM2I0YzUKICAgICAgICA8L0lucHV0SGFzaD4KICAgIDwvRG9jcz4KPC9Fc2lnbj4%3D\u0026Content-Type=application%2Fxml","request_id":"5ea2f70b-a20d-4bdb-8f43-f17baffb40c2","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:55:57 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:55:57 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:55:57 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:55:57 Replacement: "otp":"******"
+2025/06/10 11:55:57 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:55:57 Replacement: "password":"******"
+2025/06/10 11:55:57 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:55:57 Replacement: "privateKey":"******"
+2025/06/10 11:55:57 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:55:57 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-10 11:55:57.517] req_start_authAndEkyc                         [36mrequest_id[0m="_:1749536757517"
+[37mDEBU[0m[2025-06-10 11:55:57.517] Received esign request                        [37mmsg_length[0m=294
+[37mDEBU[0m[2025-06-10 11:55:57.517] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:55:57.518] XML is not base64 encoded                    
+[31mERRO[0m[2025-06-10 11:55:57.518] XSD validation failed                         [31merror[0m="missing required attribute: AuthMode"
+[37mDEBU[0m[2025-06-10 11:55:57.518] Creating error response                       [37mext_code[0m=ESP-102 [37mint_code[0m=ESP-102 [37mmessage[0m="Invalid request format"
+[36mINFO[0m[2025-06-10 11:55:57.521] req_end_authAndEkyc                           [36mrequest_id[0m="_:1749536757517"
+[36mINFO[0m[2025-06-10 11:55:57.521] HTTP 2xx: {"client_ip":"::1","latency":"3.867291ms","latency_ms":3,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T11%3A55%3A56.973Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-102%22+errMsg%3D%22Invalid+request+format%22+resCode%3D%22ESP-102%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T11%3A55%3A56.973Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"_:1749536757517","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:55:58 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:55:58 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:55:58 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:55:58 Replacement: "otp":"******"
+2025/06/10 11:55:58 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:55:58 Replacement: "password":"******"
+2025/06/10 11:55:58 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:55:58 Replacement: "privateKey":"******"
+2025/06/10 11:55:58 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:55:58 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-10 11:55:58.041] req_start_authAndEkyc                         [36mrequest_id[0m="_:1749536758041"
+[37mDEBU[0m[2025-06-10 11:55:58.041] Received esign request                        [37mmsg_length[0m=294
+[37mDEBU[0m[2025-06-10 11:55:58.041] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:55:58.041] XML is not base64 encoded                    
+[31mERRO[0m[2025-06-10 11:55:58.042] XSD validation failed                         [31merror[0m="missing required attribute: AuthMode"
+[37mDEBU[0m[2025-06-10 11:55:58.042] Creating error response                       [37mext_code[0m=ESP-102 [37mint_code[0m=ESP-102 [37mmessage[0m="Invalid request format"
+[36mINFO[0m[2025-06-10 11:55:58.046] req_end_authAndEkyc                           [36mrequest_id[0m="_:1749536758041"
+[36mINFO[0m[2025-06-10 11:55:58.046] HTTP 2xx: {"client_ip":"::1","latency":"5.145167ms","latency_ms":5,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T11%3A55%3A57.518Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-102%22+errMsg%3D%22Invalid+request+format%22+resCode%3D%22ESP-102%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T11%3A55%3A57.518Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"_:1749536758041","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:55:58 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:55:58 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:55:58 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:55:58 Replacement: "otp":"******"
+2025/06/10 11:55:58 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:55:58 Replacement: "password":"******"
+2025/06/10 11:55:58 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:55:58 Replacement: "privateKey":"******"
+2025/06/10 11:55:58 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:55:58 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-10 11:55:58.564] req_start_authAndEkyc                         [36mrequest_id[0m="_:1749536758564"
+[37mDEBU[0m[2025-06-10 11:55:58.564] Received esign request                        [37mmsg_length[0m=294
+[37mDEBU[0m[2025-06-10 11:55:58.564] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:55:58.564] XML is not base64 encoded                    
+[31mERRO[0m[2025-06-10 11:55:58.564] XSD validation failed                         [31merror[0m="missing required attribute: AuthMode"
+[37mDEBU[0m[2025-06-10 11:55:58.564] Creating error response                       [37mext_code[0m=ESP-102 [37mint_code[0m=ESP-102 [37mmessage[0m="Invalid request format"
+[36mINFO[0m[2025-06-10 11:55:58.572] req_end_authAndEkyc                           [36mrequest_id[0m="_:1749536758564"
+[36mINFO[0m[2025-06-10 11:55:58.572] HTTP 2xx: {"client_ip":"::1","latency":"7.76475ms","latency_ms":7,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T11%3A55%3A58.042Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-102%22+errMsg%3D%22Invalid+request+format%22+resCode%3D%22ESP-102%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T11%3A55%3A58.042Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"_:1749536758564","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:55:59 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:55:59 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:55:59 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:55:59 Replacement: "otp":"******"
+2025/06/10 11:55:59 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:55:59 Replacement: "password":"******"
+2025/06/10 11:55:59 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:55:59 Replacement: "privateKey":"******"
+2025/06/10 11:55:59 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:55:59 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-10 11:55:59.089] req_start_authAndEkyc                         [36mrequest_id[0m="_:1749536759089"
+[37mDEBU[0m[2025-06-10 11:55:59.089] Received esign request                        [37mmsg_length[0m=294
+[37mDEBU[0m[2025-06-10 11:55:59.089] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:55:59.089] XML is not base64 encoded                    
+[31mERRO[0m[2025-06-10 11:55:59.089] XSD validation failed                         [31merror[0m="missing required attribute: AuthMode"
+[37mDEBU[0m[2025-06-10 11:55:59.089] Creating error response                       [37mext_code[0m=ESP-102 [37mint_code[0m=ESP-102 [37mmessage[0m="Invalid request format"
+[36mINFO[0m[2025-06-10 11:55:59.095] req_end_authAndEkyc                           [36mrequest_id[0m="_:1749536759089"
+[36mINFO[0m[2025-06-10 11:55:59.095] HTTP 2xx: {"client_ip":"::1","latency":"5.71ms","latency_ms":5,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T11%3A55%3A58.564Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-102%22+errMsg%3D%22Invalid+request+format%22+resCode%3D%22ESP-102%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T11%3A55%3A58.564Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"_:1749536759089","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:55:59 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:55:59 Replacement: "biometricData":"******"
+2025/06/10 11:55:59 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:55:59 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:55:59 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:55:59 Replacement: "otp":"******"
+2025/06/10 11:55:59 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:55:59 Replacement: "password":"******"
+2025/06/10 11:55:59 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:55:59 Replacement: "privateKey":"******"
+[36mINFO[0m[2025-06-10 11:55:59.608] req_start_authAndEkyc                         [36mrequest_id[0m="_:1749536759608"
+[37mDEBU[0m[2025-06-10 11:55:59.608] Received esign request                        [37mmsg_length[0m=294
+[37mDEBU[0m[2025-06-10 11:55:59.608] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:55:59.608] XML is not base64 encoded                    
+[31mERRO[0m[2025-06-10 11:55:59.608] XSD validation failed                         [31merror[0m="missing required attribute: AuthMode"
+[37mDEBU[0m[2025-06-10 11:55:59.608] Creating error response                       [37mext_code[0m=ESP-102 [37mint_code[0m=ESP-102 [37mmessage[0m="Invalid request format"
+[36mINFO[0m[2025-06-10 11:55:59.612] req_end_authAndEkyc                           [36mrequest_id[0m="_:1749536759608"
+[36mINFO[0m[2025-06-10 11:55:59.612] HTTP 2xx: {"client_ip":"::1","latency":"4.296167ms","latency_ms":4,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T11%3A55%3A59.089Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-102%22+errMsg%3D%22Invalid+request+format%22+resCode%3D%22ESP-102%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T11%3A55%3A59.089Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"_:1749536759608","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:56:00 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:56:00 Replacement: "otp":"******"
+2025/06/10 11:56:00 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:56:00 Replacement: "password":"******"
+2025/06/10 11:56:00 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:56:00 Replacement: "privateKey":"******"
+2025/06/10 11:56:00 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:56:00 Replacement: "biometricData":"******"
+2025/06/10 11:56:00 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:56:00 Replacement: "aadhaar":"XXXX-XXXX-$1"
+[36mINFO[0m[2025-06-10 11:56:00.130] req_start_authAndEkyc                         [36mrequest_id[0m="_:1749536760130"
+[37mDEBU[0m[2025-06-10 11:56:00.130] Received esign request                        [37mmsg_length[0m=294
+[37mDEBU[0m[2025-06-10 11:56:00.130] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:56:00.130] XML is not base64 encoded                    
+[31mERRO[0m[2025-06-10 11:56:00.130] XSD validation failed                         [31merror[0m="missing required attribute: AuthMode"
+[37mDEBU[0m[2025-06-10 11:56:00.130] Creating error response                       [37mext_code[0m=ESP-102 [37mint_code[0m=ESP-102 [37mmessage[0m="Invalid request format"
+[36mINFO[0m[2025-06-10 11:56:00.135] req_end_authAndEkyc                           [36mrequest_id[0m="_:1749536760130"
+[36mINFO[0m[2025-06-10 11:56:00.135] HTTP 2xx: {"client_ip":"::1","latency":"6.037042ms","latency_ms":6,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T11%3A55%3A59.608Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-102%22+errMsg%3D%22Invalid+request+format%22+resCode%3D%22ESP-102%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T11%3A55%3A59.608Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"_:1749536760130","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:56:00 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:56:00 Replacement: "password":"******"
+2025/06/10 11:56:00 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:56:00 Replacement: "privateKey":"******"
+2025/06/10 11:56:00 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:56:00 Replacement: "biometricData":"******"
+2025/06/10 11:56:00 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:56:00 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:56:00 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:56:00 Replacement: "otp":"******"
+[36mINFO[0m[2025-06-10 11:56:00.651] req_start_authAndEkyc                         [36mrequest_id[0m="_:1749536760651"
+[37mDEBU[0m[2025-06-10 11:56:00.651] Received esign request                        [37mmsg_length[0m=294
+[37mDEBU[0m[2025-06-10 11:56:00.651] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:56:00.651] XML is not base64 encoded                    
+[31mERRO[0m[2025-06-10 11:56:00.651] XSD validation failed                         [31merror[0m="missing required attribute: AuthMode"
+[37mDEBU[0m[2025-06-10 11:56:00.651] Creating error response                       [37mext_code[0m=ESP-102 [37mint_code[0m=ESP-102 [37mmessage[0m="Invalid request format"
+[36mINFO[0m[2025-06-10 11:56:00.657] req_end_authAndEkyc                           [36mrequest_id[0m="_:1749536760651"
+[36mINFO[0m[2025-06-10 11:56:00.658] HTTP 2xx: {"client_ip":"::1","latency":"6.665ms","latency_ms":6,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T11%3A56%3A00.130Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-102%22+errMsg%3D%22Invalid+request+format%22+resCode%3D%22ESP-102%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T11%3A56%3A00.130Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"_:1749536760651","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:56:01 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:56:01 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:56:01 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:56:01 Replacement: "otp":"******"
+2025/06/10 11:56:01 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:56:01 Replacement: "password":"******"
+2025/06/10 11:56:01 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:56:01 Replacement: "privateKey":"******"
+2025/06/10 11:56:01 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:56:01 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-10 11:56:01.175] req_start_authAndEkyc                         [36mrequest_id[0m="_:1749536761175"
+[37mDEBU[0m[2025-06-10 11:56:01.175] Received esign request                        [37mmsg_length[0m=294
+[37mDEBU[0m[2025-06-10 11:56:01.175] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:56:01.175] XML is not base64 encoded                    
+[31mERRO[0m[2025-06-10 11:56:01.175] XSD validation failed                         [31merror[0m="missing required attribute: AuthMode"
+[37mDEBU[0m[2025-06-10 11:56:01.175] Creating error response                       [37mext_code[0m=ESP-102 [37mint_code[0m=ESP-102 [37mmessage[0m="Invalid request format"
+[36mINFO[0m[2025-06-10 11:56:01.179] req_end_authAndEkyc                           [36mrequest_id[0m="_:1749536761175"
+[36mINFO[0m[2025-06-10 11:56:01.179] HTTP 2xx: {"client_ip":"::1","latency":"4.579583ms","latency_ms":4,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T11%3A56%3A00.651Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-102%22+errMsg%3D%22Invalid+request+format%22+resCode%3D%22ESP-102%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T11%3A56%3A00.651Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"_:1749536761175","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:56:01 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:56:01 Replacement: "privateKey":"******"
+2025/06/10 11:56:01 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:56:01 Replacement: "biometricData":"******"
+2025/06/10 11:56:01 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:56:01 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:56:01 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:56:01 Replacement: "otp":"******"
+2025/06/10 11:56:01 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:56:01 Replacement: "password":"******"
+[36mINFO[0m[2025-06-10 11:56:01.701] req_start_authAndEkyc                         [36mrequest_id[0m="_:1749536761701"
+[37mDEBU[0m[2025-06-10 11:56:01.701] Received esign request                        [37mmsg_length[0m=294
+[37mDEBU[0m[2025-06-10 11:56:01.701] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:56:01.701] XML is not base64 encoded                    
+[31mERRO[0m[2025-06-10 11:56:01.701] XSD validation failed                         [31merror[0m="missing required attribute: AuthMode"
+[37mDEBU[0m[2025-06-10 11:56:01.701] Creating error response                       [37mext_code[0m=ESP-102 [37mint_code[0m=ESP-102 [37mmessage[0m="Invalid request format"
+[36mINFO[0m[2025-06-10 11:56:01.704] req_end_authAndEkyc                           [36mrequest_id[0m="_:1749536761701"
+[36mINFO[0m[2025-06-10 11:56:01.704] HTTP 2xx: {"client_ip":"::1","latency":"3.542417ms","latency_ms":3,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T11%3A56%3A01.175Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-102%22+errMsg%3D%22Invalid+request+format%22+resCode%3D%22ESP-102%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T11%3A56%3A01.175Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"_:1749536761701","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:56:02 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:56:02 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:56:02 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:56:02 Replacement: "otp":"******"
+2025/06/10 11:56:02 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:56:02 Replacement: "password":"******"
+2025/06/10 11:56:02 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:56:02 Replacement: "privateKey":"******"
+2025/06/10 11:56:02 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:56:02 Replacement: "biometricData":"******"
+[33mWARN[0m[2025-06-10 11:56:02.223] Rate limit exceeded                           [33mendpoint[0m=esign-doc [33mkey[0m="::1"
+[33mWARN[0m[2025-06-10 11:56:02.223] HTTP 4xx: {"client_ip":"::1","latency":"554.666µs","latency_ms":0,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T11%3A56%3A01.701Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-102%22+errMsg%3D%22Invalid+request+format%22+resCode%3D%22ESP-102%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T11%3A56%3A01.701Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"58deac0e-4db0-4908-a2d3-a32458397dab","response_body":"{\"error\":\"Rate limit exceeded\",\"message\":\"Too many requests. Please try again after 2025-06-10T11:56:56+05:30\",\"retryAfter\":1749536816}","status":429,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [33mcaller[0m="logger.go:99"
+[36mINFO[0m[2025-06-10 11:56:41.392] req_start_authRa                              [36mtid[0m=1
+[36mINFO[0m[2025-06-10 11:56:41.396] req_end_authRa                                [36mtid[0m=1
+[36mINFO[0m[2025-06-10 11:56:41.396] HTTP 2xx: {"client_ip":"::1","latency":"4.181791ms","latency_ms":4,"method":"GET","path":"/authenticate/auth-ra?tid=MQ==","request_id":"6c66ea6a-034d-4c13-a652-6db49d15a981","status":200,"user_agent":"curl/8.7.1"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:58:33 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:58:33 Replacement: "password":"******"
+2025/06/10 11:58:33 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:58:33 Replacement: "privateKey":"******"
+2025/06/10 11:58:33 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:58:33 Replacement: "biometricData":"******"
+2025/06/10 11:58:33 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:58:33 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:58:33 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:58:33 Replacement: "otp":"******"
+[36mINFO[0m[2025-06-10 11:58:33.955] req_start_authAndEkyc                         [36mrequest_id[0m=19ada202-a503-4a19-aec8-744ab91d3266
+[37mDEBU[0m[2025-06-10 11:58:33.955] Received esign request                        [37mmsg_length[0m=620
+[37mDEBU[0m[2025-06-10 11:58:33.955] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 11:58:33.955] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-10 11:58:33.955] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-10T06:28:22ZZ\" txn=\"TEST-"
+[37mDEBU[0m[2025-06-10 11:58:33.955] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-1749536902058
+[31mERRO[0m[2025-06-10 11:58:33.963] Failed to parse timestamp                     [31merror[0m="parsing time \"2025-06-10T06:28:22ZZ\": extra text: \"Z\"" [31mtimestamp[0m="2025-06-10T06:28:22ZZ"
+[37mDEBU[0m[2025-06-10 11:58:33.963] Creating error response                       [37mext_code[0m=ESP-005 [37mint_code[0m=ESP-005 [37mmessage[0m="Request timestamp invalid"
+[36mINFO[0m[2025-06-10 11:58:33.970] req_end_authAndEkyc                           [36mrequest_id[0m=19ada202-a503-4a19-aec8-744ab91d3266
+[36mINFO[0m[2025-06-10 11:58:33.970] HTTP 2xx: {"client_ip":"::1","latency":"15.941875ms","latency_ms":15,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMTBUMDY6Mjg6MjJaWiIgdHhuPSJURVNULTE3NDk1MzY5MDIwNTgiIAogICAgICAgYXNwSWQ9IlRFU1QwMDEiIAogICAgICAgQXV0aE1vZGU9IjEiIHJlc3BvbnNlU2lnVHlwZT0icGtjczciIAogICAgICAgcHJlVmVyaWZpZWQ9Im4iIG9yZ2FuaXphdGlvbkZsYWc9Im4iIAogICAgICAgcmVzcG9uc2VVcmw9Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9jYWxsYmFjayI%2BCiAgICA8RG9jcz4KICAgICAgICA8SW5wdXRIYXNoIGlkPSIxIiBoYXNoQWxnb3JpdGhtPSJTSEEyNTYiIGRvY0luZm89IlRlc3QgRG9jdW1lbnQiPmE1ZjNjNmQ3ZThiOWEwYzFkMmUzZjRhNWI2YzdkOGU5ZjBhMWIyYzNkNGU1ZjZhN2I4YzlkMGUxZjJhM2I0YzU8L0lucHV0SGFzaD4KICAgIDwvRG9jcz4KPC9Fc2lnbj4%3D","request_id":"98b94c60-935f-410e-952d-6b2945c10047","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 11:58:34 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 11:58:34 Replacement: "password":"******"
+2025/06/10 11:58:34 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 11:58:34 Replacement: "privateKey":"******"
+2025/06/10 11:58:34 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 11:58:34 Replacement: "biometricData":"******"
+2025/06/10 11:58:34 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 11:58:34 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 11:58:34 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 11:58:34 Replacement: "otp":"******"
+[33mWARN[0m[2025-06-10 11:58:34.508] HTTP 4xx: {"client_ip":"::1","latency":"143.292µs","latency_ms":0,"method":"POST","path":"/callback","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T11%3A58%3A33.963Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-005%22+errMsg%3D%22Request+timestamp+invalid%22+resCode%3D%22ESP-005%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T11%3A58%3A33.963Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"b028b7c1-73a4-43a1-836a-02c1045e6297","status":404,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [33mcaller[0m="logger.go:99"
+2025/06/10 12:00:41 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:00:41 Replacement: "otp":"******"
+2025/06/10 12:00:41 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:00:41 Replacement: "password":"******"
+2025/06/10 12:00:41 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:00:41 Replacement: "privateKey":"******"
+2025/06/10 12:00:41 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:00:41 Replacement: "biometricData":"******"
+2025/06/10 12:00:41 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:00:41 Replacement: "aadhaar":"XXXX-XXXX-$1"
+[36mINFO[0m[2025-06-10 12:00:41.985] req_start_authAndEkyc                         [36mrequest_id[0m=485c7a09-b237-44c5-aa5f-d7c98c4758a8
+[37mDEBU[0m[2025-06-10 12:00:41.985] Received esign request                        [37mmsg_length[0m=620
+[37mDEBU[0m[2025-06-10 12:00:41.985] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 12:00:41.985] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-10 12:00:41.985] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-10T06:28:22ZZ\" txn=\"TEST-"
+[37mDEBU[0m[2025-06-10 12:00:41.985] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-1749536902058
+[31mERRO[0m[2025-06-10 12:00:41.988] Failed to parse timestamp                     [31merror[0m="parsing time \"2025-06-10T06:28:22ZZ\": extra text: \"Z\"" [31mtimestamp[0m="2025-06-10T06:28:22ZZ"
+[37mDEBU[0m[2025-06-10 12:00:41.988] Creating error response                       [37mext_code[0m=ESP-005 [37mint_code[0m=ESP-005 [37mmessage[0m="Request timestamp invalid"
+[36mINFO[0m[2025-06-10 12:00:41.998] req_end_authAndEkyc                           [36mrequest_id[0m=485c7a09-b237-44c5-aa5f-d7c98c4758a8
+[36mINFO[0m[2025-06-10 12:00:41.998] HTTP 2xx: {"client_ip":"::1","latency":"13.958625ms","latency_ms":13,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMTBUMDY6Mjg6MjJaWiIgdHhuPSJURVNULTE3NDk1MzY5MDIwNTgiIAogICAgICAgYXNwSWQ9IlRFU1QwMDEiIAogICAgICAgQXV0aE1vZGU9IjEiIHJlc3BvbnNlU2lnVHlwZT0icGtjczciIAogICAgICAgcHJlVmVyaWZpZWQ9Im4iIG9yZ2FuaXphdGlvbkZsYWc9Im4iIAogICAgICAgcmVzcG9uc2VVcmw9Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9jYWxsYmFjayI%2BCiAgICA8RG9jcz4KICAgICAgICA8SW5wdXRIYXNoIGlkPSIxIiBoYXNoQWxnb3JpdGhtPSJTSEEyNTYiIGRvY0luZm89IlRlc3QgRG9jdW1lbnQiPmE1ZjNjNmQ3ZThiOWEwYzFkMmUzZjRhNWI2YzdkOGU5ZjBhMWIyYzNkNGU1ZjZhN2I4YzlkMGUxZjJhM2I0YzU8L0lucHV0SGFzaD4KICAgIDwvRG9jcz4KPC9Fc2lnbj4%3D","request_id":"1d65836e-9751-4a6e-a845-32083c137539","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 12:00:42 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:00:42 Replacement: "otp":"******"
+2025/06/10 12:00:42 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:00:42 Replacement: "password":"******"
+2025/06/10 12:00:42 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:00:42 Replacement: "privateKey":"******"
+2025/06/10 12:00:42 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:00:42 Replacement: "biometricData":"******"
+2025/06/10 12:00:42 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:00:42 Replacement: "aadhaar":"XXXX-XXXX-$1"
+[33mWARN[0m[2025-06-10 12:00:42.530] HTTP 4xx: {"client_ip":"::1","latency":"484.25µs","latency_ms":0,"method":"POST","path":"/callback","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T12%3A00%3A41.988Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-005%22+errMsg%3D%22Request+timestamp+invalid%22+resCode%3D%22ESP-005%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T12%3A00%3A41.988Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"1dbce4cf-2c1b-47d4-aeda-4055ca4babb8","status":404,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [33mcaller[0m="logger.go:99"
+2025/06/10 12:01:09 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:01:09 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 12:01:09 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:01:09 Replacement: "otp":"******"
+2025/06/10 12:01:09 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:01:09 Replacement: "password":"******"
+2025/06/10 12:01:09 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:01:09 Replacement: "privateKey":"******"
+2025/06/10 12:01:09 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:01:09 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-10 12:01:09.234] req_start_authAndEkyc                         [36mrequest_id[0m=6abbae19-40fa-4793-8f2b-6f827f068d30
+[37mDEBU[0m[2025-06-10 12:01:09.234] Received esign request                        [37mmsg_length[0m=620
+[37mDEBU[0m[2025-06-10 12:01:09.234] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 12:01:09.234] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-10 12:01:09.234] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-10T06:28:22ZZ\" txn=\"TEST-"
+[37mDEBU[0m[2025-06-10 12:01:09.234] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-1749536902058
+[31mERRO[0m[2025-06-10 12:01:09.237] Failed to parse timestamp                     [31merror[0m="parsing time \"2025-06-10T06:28:22ZZ\": extra text: \"Z\"" [31mtimestamp[0m="2025-06-10T06:28:22ZZ"
+[37mDEBU[0m[2025-06-10 12:01:09.237] Creating error response                       [37mext_code[0m=ESP-005 [37mint_code[0m=ESP-005 [37mmessage[0m="Request timestamp invalid"
+[36mINFO[0m[2025-06-10 12:01:09.244] req_end_authAndEkyc                           [36mrequest_id[0m=6abbae19-40fa-4793-8f2b-6f827f068d30
+[36mINFO[0m[2025-06-10 12:01:09.244] HTTP 2xx: {"client_ip":"::1","latency":"11.074458ms","latency_ms":11,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMTBUMDY6Mjg6MjJaWiIgdHhuPSJURVNULTE3NDk1MzY5MDIwNTgiIAogICAgICAgYXNwSWQ9IlRFU1QwMDEiIAogICAgICAgQXV0aE1vZGU9IjEiIHJlc3BvbnNlU2lnVHlwZT0icGtjczciIAogICAgICAgcHJlVmVyaWZpZWQ9Im4iIG9yZ2FuaXphdGlvbkZsYWc9Im4iIAogICAgICAgcmVzcG9uc2VVcmw9Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9jYWxsYmFjayI%2BCiAgICA8RG9jcz4KICAgICAgICA8SW5wdXRIYXNoIGlkPSIxIiBoYXNoQWxnb3JpdGhtPSJTSEEyNTYiIGRvY0luZm89IlRlc3QgRG9jdW1lbnQiPmE1ZjNjNmQ3ZThiOWEwYzFkMmUzZjRhNWI2YzdkOGU5ZjBhMWIyYzNkNGU1ZjZhN2I4YzlkMGUxZjJhM2I0YzU8L0lucHV0SGFzaD4KICAgIDwvRG9jcz4KPC9Fc2lnbj4%3D","request_id":"fe384bd0-ec46-4f09-8134-01f52f3d3f1e","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 12:01:09 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:01:09 Replacement: "biometricData":"******"
+2025/06/10 12:01:09 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:01:09 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 12:01:09 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:01:09 Replacement: "otp":"******"
+2025/06/10 12:01:09 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:01:09 Replacement: "password":"******"
+2025/06/10 12:01:09 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:01:09 Replacement: "privateKey":"******"
+[33mWARN[0m[2025-06-10 12:01:09.771] HTTP 4xx: {"client_ip":"::1","latency":"197.791µs","latency_ms":0,"method":"POST","path":"/callback","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T12%3A01%3A09.237Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-005%22+errMsg%3D%22Request+timestamp+invalid%22+resCode%3D%22ESP-005%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T12%3A01%3A09.237Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"38fbfbd7-8fac-4b7e-876d-29eaf0cfc049","status":404,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [33mcaller[0m="logger.go:99"
+2025/06/10 12:02:17 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:02:17 Replacement: "biometricData":"******"
+2025/06/10 12:02:17 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:02:17 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 12:02:17 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:02:17 Replacement: "otp":"******"
+2025/06/10 12:02:17 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:02:17 Replacement: "password":"******"
+2025/06/10 12:02:17 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:02:17 Replacement: "privateKey":"******"
+[36mINFO[0m[2025-06-10 12:02:17.762] req_start_authAndEkyc                         [36mrequest_id[0m=79fbadc3-692a-4845-8493-31aa9f1e78f4
+[37mDEBU[0m[2025-06-10 12:02:17.762] Received esign request                        [37mmsg_length[0m=620
+[37mDEBU[0m[2025-06-10 12:02:17.762] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 12:02:17.763] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-10 12:02:17.763] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-10T06:28:22ZZ\" txn=\"TEST-"
+[37mDEBU[0m[2025-06-10 12:02:17.763] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-1749536902058
+[31mERRO[0m[2025-06-10 12:02:17.765] Failed to parse timestamp                     [31merror[0m="parsing time \"2025-06-10T06:28:22ZZ\": extra text: \"Z\"" [31mtimestamp[0m="2025-06-10T06:28:22ZZ"
+[37mDEBU[0m[2025-06-10 12:02:17.765] Creating error response                       [37mext_code[0m=ESP-005 [37mint_code[0m=ESP-005 [37mmessage[0m="Request timestamp invalid"
+[36mINFO[0m[2025-06-10 12:02:17.772] req_end_authAndEkyc                           [36mrequest_id[0m=79fbadc3-692a-4845-8493-31aa9f1e78f4
+[36mINFO[0m[2025-06-10 12:02:17.773] HTTP 2xx: {"client_ip":"::1","latency":"10.879834ms","latency_ms":10,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMTBUMDY6Mjg6MjJaWiIgdHhuPSJURVNULTE3NDk1MzY5MDIwNTgiIAogICAgICAgYXNwSWQ9IlRFU1QwMDEiIAogICAgICAgQXV0aE1vZGU9IjEiIHJlc3BvbnNlU2lnVHlwZT0icGtjczciIAogICAgICAgcHJlVmVyaWZpZWQ9Im4iIG9yZ2FuaXphdGlvbkZsYWc9Im4iIAogICAgICAgcmVzcG9uc2VVcmw9Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9jYWxsYmFjayI%2BCiAgICA8RG9jcz4KICAgICAgICA8SW5wdXRIYXNoIGlkPSIxIiBoYXNoQWxnb3JpdGhtPSJTSEEyNTYiIGRvY0luZm89IlRlc3QgRG9jdW1lbnQiPmE1ZjNjNmQ3ZThiOWEwYzFkMmUzZjRhNWI2YzdkOGU5ZjBhMWIyYzNkNGU1ZjZhN2I4YzlkMGUxZjJhM2I0YzU8L0lucHV0SGFzaD4KICAgIDwvRG9jcz4KPC9Fc2lnbj4%3D","request_id":"027f8acb-2f9a-4bf3-a2cd-ed7181687d44","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 12:02:18 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:02:18 Replacement: "privateKey":"******"
+2025/06/10 12:02:18 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:02:18 Replacement: "biometricData":"******"
+2025/06/10 12:02:18 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:02:18 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 12:02:18 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:02:18 Replacement: "otp":"******"
+2025/06/10 12:02:18 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:02:18 Replacement: "password":"******"
+[33mWARN[0m[2025-06-10 12:02:18.310] HTTP 4xx: {"client_ip":"::1","latency":"177.25µs","latency_ms":0,"method":"POST","path":"/callback","request_body":"msg=%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%0D%0A%3CEsign+ver%3D%222.1%22+ts%3D%222025-06-10T12%3A02%3A17.765Z%22+txn%3D%22%22+responseSigType%3D%22pkcs7%22+sc%3D%22Y%22+aspId%3D%22%22+responseUrl%3D%22%22%3E%0D%0A%09%3CResp+status%3D%221%22+errCode%3D%22ESP-005%22+errMsg%3D%22Request+timestamp+invalid%22+resCode%3D%22ESP-005%22%3E%0D%0A%09%09%3Cts%3E2025-06-10T12%3A02%3A17.765Z%3C%2Fts%3E%0D%0A%09%3C%2FResp%3E%0D%0A%3C%2FEsign%3E","request_id":"46326d50-c90e-4d24-abd3-ed0a1c5b85ac","status":404,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [33mcaller[0m="logger.go:99"
+2025/06/10 12:02:25 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:02:25 Replacement: "password":"******"
+2025/06/10 12:02:25 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:02:25 Replacement: "privateKey":"******"
+2025/06/10 12:02:25 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:02:25 Replacement: "biometricData":"******"
+2025/06/10 12:02:25 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:02:25 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 12:02:25 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:02:25 Replacement: "otp":"******"
+[36mINFO[0m[2025-06-10 12:02:25.128] req_start_authAndEkyc                         [36mrequest_id[0m=78de9d5d-4ec9-4306-bc12-cfac56f5db64
+[37mDEBU[0m[2025-06-10 12:02:25.129] Received esign request                        [37mmsg_length[0m=620
+[37mDEBU[0m[2025-06-10 12:02:25.129] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-10 12:02:25.129] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-10 12:02:25.129] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-10T06:32:22Z\" txn=\"TEST-1"
+[37mDEBU[0m[2025-06-10 12:02:25.129] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-1749537142628
+[37mDEBU[0m[2025-06-10 12:02:25.131] Validating request timestamp                  [37mallowed_range[0m="[-30, 30] minutes" [37mcurrent_time[0m="2025-06-10T12:02:25+05:30" [37mdiff_seconds[0m=3.131093 [37mparsed_time[0m="2025-06-10T06:32:22Z" [37mrequest_timestamp[0m="2025-06-10T06:32:22Z" [37mtimeout_minutes[0m=30
+[36mINFO[0m[2025-06-10 12:02:25.134] req_end_authAndEkyc                           [36mrequest_id[0m=78de9d5d-4ec9-4306-bc12-cfac56f5db64
+[36mINFO[0m[2025-06-10 12:02:25.134] HTTP 3xx: {"client_ip":"::1","latency":"6.163417ms","latency_ms":6,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMTBUMDY6MzI6MjJaIiB0eG49IlRFU1QtMTc0OTUzNzE0MjYyOCIgCiAgICAgICBhc3BJZD0iVEVTVDAwMSIgCiAgICAgICBBdXRoTW9kZT0iMSIgcmVzcG9uc2VTaWdUeXBlPSJwa2NzNyIgCiAgICAgICBwcmVWZXJpZmllZD0ibiIgb3JnYW5pemF0aW9uRmxhZz0ibiIgCiAgICAgICByZXNwb25zZVVybD0iaHR0cDovL2xvY2FsaG9zdDo4MDkwL2NhbGxiYWNrIj4KICAgIDxEb2NzPgogICAgICAgIDxJbnB1dEhhc2ggaWQ9IjEiIGhhc2hBbGdvcml0aG09IlNIQTI1NiIgZG9jSW5mbz0iVGVzdCBEb2N1bWVudCI%2BYTVmM2M2ZDdlOGI5YTBjMWQyZTNmNGE1YjZjN2Q4ZTlmMGExYjJjM2Q0ZTVmNmE3YjhjOWQwZTFmMmEzYjRjNTwvSW5wdXRIYXNoPgogICAgPC9Eb2NzPgo8L0VzaWduPg%3D%3D","request_id":"e22511b9-c3d8-412b-95d4-b8b9dc238381","status":302,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:101"
+[36mINFO[0m[2025-06-10 12:02:25.136] req_start_authRa                              [36mtid[0m=2
+[36mINFO[0m[2025-06-10 12:02:25.141] req_end_authRa                                [36mtid[0m=2
+[36mINFO[0m[2025-06-10 12:02:25.141] HTTP 2xx: {"client_ip":"::1","latency":"5.217708ms","latency_ms":5,"method":"GET","path":"/authenticate/auth-ra?tid=Mg==","request_id":"8fe722e1-aad5-4474-af41-970fbb1aa803","status":200,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [36mcaller[0m="logger.go:103"
+2025/06/10 12:02:40 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:02:40 Replacement: "biometricData":"******"
+2025/06/10 12:02:40 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:02:40 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 12:02:40 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:02:40 Replacement: "otp":"******"
+2025/06/10 12:02:40 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:02:40 Replacement: "password":"******"
+2025/06/10 12:02:40 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:02:40 Replacement: "privateKey":"******"
+[33mWARN[0m[2025-06-10 12:02:40.700] HTTP 4xx: {"client_ip":"::1","latency":"575.209µs","latency_ms":0,"method":"POST","path":"/authenticate/otp","request_body":"{\"rid\":\"2\",\"uid\":\"999999990019\"}","request_id":"b09c699c-f59a-40f5-ac8b-da425f85f203","response_body":"{\"status\":\"0\",\"msg\":\"Invalid request format\",\"retryCount\":0}","status":400,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [33mcaller[0m="logger.go:99"
+2025/06/10 12:02:51 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:02:51 Replacement: "password":"******"
+2025/06/10 12:02:51 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:02:51 Replacement: "privateKey":"******"
+2025/06/10 12:02:51 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:02:51 Replacement: "biometricData":"******"
+2025/06/10 12:02:51 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:02:51 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 12:02:51 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:02:51 Replacement: "otp":"******"
+[33mWARN[0m[2025-06-10 12:02:51.715] HTTP 4xx: {"client_ip":"::1","latency":"1.160875ms","latency_ms":1,"method":"POST","path":"/authenticate/otp","request_body":"{\"rid\":\"2\",\"uid\":\"999999990019\"}","request_id":"16522845-798a-4bf2-806b-a774af93826c","response_body":"{\"status\":\"0\",\"msg\":\"Invalid request format\",\"retryCount\":0}","status":400,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [33mcaller[0m="logger.go:99"
+2025/06/10 12:02:52 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:02:52 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 12:02:52 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:02:52 Replacement: "otp":"******"
+2025/06/10 12:02:52 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:02:52 Replacement: "password":"******"
+2025/06/10 12:02:52 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:02:52 Replacement: "privateKey":"******"
+2025/06/10 12:02:52 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:02:52 Replacement: "biometricData":"******"
+[33mWARN[0m[2025-06-10 12:02:52.449] HTTP 4xx: {"client_ip":"::1","latency":"677.667µs","latency_ms":0,"method":"POST","path":"/authenticate/otp","request_body":"{\"rid\":\"2\",\"uid\":\"999999990019\"}","request_id":"dbf5b841-5811-40a6-8a88-671e17a67902","response_body":"{\"status\":\"0\",\"msg\":\"Invalid request format\",\"retryCount\":0}","status":400,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [33mcaller[0m="logger.go:99"
+2025/06/10 12:03:28 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:03:28 Replacement: "biometricData":"******"
+2025/06/10 12:03:28 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:03:28 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 12:03:28 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:03:28 Replacement: "otp":"******"
+2025/06/10 12:03:28 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:03:28 Replacement: "password":"******"
+2025/06/10 12:03:28 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:03:28 Replacement: "privateKey":"******"
+[33mWARN[0m[2025-06-10 12:03:28.331] HTTP 4xx: {"client_ip":"::1","latency":"1.16925ms","latency_ms":1,"method":"POST","path":"/authenticate/otp","request_body":"{\"rid\":\"2\",\"uid\":\"999999990019\"}","request_id":"7044ed2d-b94a-4290-822f-a6cff96e685a","response_body":"{\"status\":\"0\",\"msg\":\"Invalid request format\",\"retryCount\":0}","status":400,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [33mcaller[0m="logger.go:99"
+2025/06/10 12:04:08 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/10 12:04:08 Replacement: "privateKey":"******"
+2025/06/10 12:04:08 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/10 12:04:08 Replacement: "biometricData":"******"
+2025/06/10 12:04:08 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/10 12:04:08 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/10 12:04:08 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/10 12:04:08 Replacement: "otp":"******"
+2025/06/10 12:04:08 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/10 12:04:08 Replacement: "password":"******"
+[33mWARN[0m[2025-06-10 12:04:08.700] HTTP 4xx: {"client_ip":"::1","latency":"2.678916ms","latency_ms":2,"method":"POST","path":"/authenticate/otp","request_body":"{\"rid\":\"2\",\"uid\":\"999999990019\"}","request_id":"583774e8-5dbd-4884-a9a9-bd5d83d3943f","response_body":"{\"status\":\"0\",\"msg\":\"Invalid request format\",\"retryCount\":0}","status":400,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}  [33mcaller[0m="logger.go:99"

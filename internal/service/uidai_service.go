@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"time"
 
 	"github.com/esign-go/internal/config"
 	"github.com/esign-go/internal/models"
@@ -31,7 +30,7 @@ func NewUIDAIService(cfg config.UIDAIConfig) *UIDAIService {
 			},
 		},
 	}
-	
+
 	return &UIDAIService{
 		config:     cfg,
 		httpClient: httpClient,
@@ -45,25 +44,25 @@ func (s *UIDAIService) SendAuthRequest(authRequest *models.UIDAIAuthRequest) (*m
 	if err != nil {
 		return nil, fmt.Errorf("failed to build auth XML: %w", err)
 	}
-	
+
 	// Log request if enabled
 	logger.Debug("UIDAI Auth Request: %s", string(xmlReq))
-	
+
 	// Send request
 	resp, err := s.sendRequest(s.config.AuthURL, xmlReq)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send auth request: %w", err)
 	}
-	
+
 	// Parse response
 	var authResp models.UIDAIAuthResponse
 	if err := xml.Unmarshal(resp, &authResp); err != nil {
 		return nil, fmt.Errorf("failed to parse auth response: %w", err)
 	}
-	
+
 	// Log response if enabled
 	logger.Debug("UIDAI Auth Response: %+v", authResp)
-	
+
 	return &authResp, nil
 }
 
@@ -74,25 +73,25 @@ func (s *UIDAIService) SendOTPRequest(otpRequest *models.UIDAIOTPRequest) (*mode
 	if err != nil {
 		return nil, fmt.Errorf("failed to build OTP XML: %w", err)
 	}
-	
+
 	// Log request if enabled
 	logger.Debug("UIDAI OTP Request: %s", string(xmlReq))
-	
+
 	// Send request
 	resp, err := s.sendRequest(s.config.OTPAuthURL, xmlReq)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send OTP request: %w", err)
 	}
-	
+
 	// Parse response
 	var otpResp models.UIDAIOTPResponse
 	if err := xml.Unmarshal(resp, &otpResp); err != nil {
 		return nil, fmt.Errorf("failed to parse OTP response: %w", err)
 	}
-	
+
 	// Log response if enabled
 	logger.Debug("UIDAI OTP Response: %+v", otpResp)
-	
+
 	return &otpResp, nil
 }
 
@@ -103,25 +102,25 @@ func (s *UIDAIService) SendEKYCRequest(ekycRequest *models.UIDAIEKYCRequest) (*m
 	if err != nil {
 		return nil, fmt.Errorf("failed to build eKYC XML: %w", err)
 	}
-	
+
 	// Log request if enabled
 	logger.Debug("UIDAI eKYC Request: %s", string(xmlReq))
-	
+
 	// Send request
 	resp, err := s.sendRequest(s.config.EKYCAuthURL, xmlReq)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send eKYC request: %w", err)
 	}
-	
+
 	// Parse response
 	var ekycResp models.UIDAIEKYCResponse
 	if err := xml.Unmarshal(resp, &ekycResp); err != nil {
 		return nil, fmt.Errorf("failed to parse eKYC response: %w", err)
 	}
-	
+
 	// Log response if enabled
 	logger.Debug("UIDAI eKYC Response: %+v", ekycResp)
-	
+
 	return &ekycResp, nil
 }
 
@@ -129,17 +128,17 @@ func (s *UIDAIService) SendEKYCRequest(ekycRequest *models.UIDAIEKYCRequest) (*m
 func (s *UIDAIService) buildAuthXML(authRequest *models.UIDAIAuthRequest) ([]byte, error) {
 	// Create Auth element
 	auth := &authXML{
-		UID:    authRequest.UID,
-		Txn:    authRequest.TxnID,
-		Ac:     s.config.SubAUA,
-		Sa:     s.config.SubAUA,
-		Ver:    s.config.AuthVersion,
-		Tid:    "registered",
-		Lk:     s.config.LicenseKey,
-		Ts:     authRequest.Timestamp.Format("2006-01-02T15:04:05"),
-		Uses:   &usesXML{},
+		UID:  authRequest.UID,
+		Txn:  authRequest.TxnID,
+		Ac:   s.config.SubAUA,
+		Sa:   s.config.SubAUA,
+		Ver:  s.config.AuthVersion,
+		Tid:  "registered",
+		Lk:   s.config.LicenseKey,
+		Ts:   authRequest.Timestamp.Format("2006-01-02T15:04:05"),
+		Uses: &usesXML{},
 	}
-	
+
 	// Set authentication factors
 	switch authRequest.AuthType {
 	case models.AuthModeOTP:
@@ -160,13 +159,13 @@ func (s *UIDAIService) buildAuthXML(authRequest *models.UIDAIAuthRequest) ([]byt
 			},
 		}
 	}
-	
+
 	// Marshal to XML
 	xmlData, err := xml.MarshalIndent(auth, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal auth XML: %w", err)
 	}
-	
+
 	return xmlData, nil
 }
 
@@ -174,25 +173,25 @@ func (s *UIDAIService) buildAuthXML(authRequest *models.UIDAIAuthRequest) ([]byt
 func (s *UIDAIService) buildOTPXML(otpRequest *models.UIDAIOTPRequest) ([]byte, error) {
 	// Create OTP request element
 	otp := &otpReqXML{
-		UID: otpRequest.UID,
-		Txn: otpRequest.TxnID,
-		Ac:  s.config.SubAUA,
-		Sa:  s.config.SubAUA,
-		Ver: s.config.AuthVersion,
-		Lk:  s.config.LicenseKey,
-		Ts:  otpRequest.Timestamp.Format("2006-01-02T15:04:05"),
+		UID:  otpRequest.UID,
+		Txn:  otpRequest.TxnID,
+		Ac:   s.config.SubAUA,
+		Sa:   s.config.SubAUA,
+		Ver:  s.config.AuthVersion,
+		Lk:   s.config.LicenseKey,
+		Ts:   otpRequest.Timestamp.Format("2006-01-02T15:04:05"),
 		Type: "A",
 		Otpv: &otpvXML{
 			Av: s.config.AuthVersion,
 		},
 	}
-	
+
 	// Marshal to XML
 	xmlData, err := xml.MarshalIndent(otp, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal OTP XML: %w", err)
 	}
-	
+
 	return xmlData, nil
 }
 
@@ -209,13 +208,13 @@ func (s *UIDAIService) buildEKYCXML(ekycRequest *models.UIDAIEKYCRequest) ([]byt
 		Ts:   ekycRequest.Timestamp.Format("2006-01-02T15:04:05"),
 		Code: ekycRequest.AuthCode,
 	}
-	
+
 	// Marshal to XML
 	xmlData, err := xml.MarshalIndent(ekyc, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal eKYC XML: %w", err)
 	}
-	
+
 	return xmlData, nil
 }
 
@@ -226,29 +225,29 @@ func (s *UIDAIService) sendRequest(url string, xmlData []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-	
+
 	// Set headers
 	req.Header.Set("Content-Type", "application/xml")
 	req.Header.Set("Accept", "application/xml")
-	
+
 	// Send request
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
 	defer resp.Body.Close()
-	
+
 	// Read response
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response: %w", err)
 	}
-	
+
 	// Check status code
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
 	}
-	
+
 	return body, nil
 }
 

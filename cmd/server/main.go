@@ -1,208 +1,216 @@
-package main
+// package main
 
-import (
-	"context"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+// import (
+// 	"context"
+// 	"log"
+// 	"net/http"
+// 	"os"
+// 	"os/signal"
+// 	"syscall"
+// 	"time"
 
-	"github.com/esign-go/internal/config"
-	"github.com/esign-go/internal/controller"
-	"github.com/esign-go/internal/middleware"
-	"github.com/esign-go/internal/models"
-	"github.com/esign-go/internal/repository"
-	"github.com/esign-go/internal/service"
-	"github.com/esign-go/pkg/logger"
-	"github.com/esign-go/pkg/xmlparser"
-	"github.com/gin-gonic/gin"
-)
+// 	"github.com/esign-go/internal/config"
+// 	"github.com/esign-go/internal/controller"
+// 	"github.com/esign-go/internal/middleware"
+// 	"github.com/esign-go/internal/models"
+// 	"github.com/esign-go/internal/repository"
+// 	"github.com/esign-go/internal/service"
+// 	"github.com/esign-go/pkg/logger"
+// 	"github.com/esign-go/pkg/xmlparser"
+// 	"github.com/gin-gonic/gin"
+// )
 
-func main() {
-	// Initialize logger
-	logger.Init()
+// func main() {
+// 	// Initialize logger
+// 	logger.Init()
 
-	// Load configuration
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
-	}
+// 	// Load configuration
+// 	cfg, err := config.Load()
+// 	if err != nil {
+// 		log.Fatalf("Failed to load configuration: %v", err)
+// 	}
 
-	// Initialize database
-	db, err := repository.InitDB(cfg.Database)
-	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
-	}
-	defer db.Close()
+// 	// Initialize database
+// 	db, err := repository.InitDB(cfg.Database)
+// 	if err != nil {
+// 		log.Fatalf("Failed to initialize database: %v", err)
+// 	}
+// 	defer db.Close()
 
-	// Run migrations
-	if err := repository.RunMigrations(db); err != nil {
-		log.Fatalf("Failed to run migrations: %v", err)
-	}
+// 	// Run migrations
+// 	if err := repository.RunMigrations(db); err != nil {
+// 		log.Fatalf("Failed to run migrations: %v", err)
+// 	}
 
-	// Initialize repositories
-	esignRepo := repository.NewEsignRepository(db)
-	aspRepo := repository.NewASPRepository(db)
+// 	// Initialize repositories
+// 	esignRepo := repository.NewEsignRepository(db)
+// 	aspRepo := repository.NewASPRepository(db)
 
-	// Initialize services
-	xmlValidator := xmlparser.NewXMLValidator()
-	
-	// Load test keys for development - in production load from config
-	privateKey, err := os.ReadFile("test-keys/private.key")
-	if err != nil {
-		log.Printf("Warning: Failed to load private key: %v", err)
-		privateKey = []byte{}
-	}
-	
-	certificate, err := os.ReadFile("test-keys/certificate.crt")
-	if err != nil {
-		log.Printf("Warning: Failed to load certificate: %v", err)
-		certificate = []byte{}
-	}
-	
-	cryptoService, err := service.NewCryptoService(privateKey, certificate)
-	if err != nil {
-		log.Fatalf("Failed to create crypto service: %v", err)
-	}
-	templateService := service.NewTemplateService(cfg.Templates.Path)
-	
-	// Create remote signing service
-	// Load CA keys for development - in production load from config
-	caCert, err := os.ReadFile("test-keys/ca-certificate.crt")
-	if err != nil {
-		log.Printf("Warning: Failed to load CA certificate: %v", err)
-		caCert = []byte{}
-	}
-	
-	caKey, err := os.ReadFile("test-keys/ca-private.key")
-	if err != nil {
-		log.Printf("Warning: Failed to load CA private key: %v", err)
-		caKey = []byte{}
-	}
-	
-	remoteSigningService, err := service.NewRemoteSigningService(cryptoService, esignRepo, caCert, caKey)
-	if err != nil {
-		log.Printf("Warning: Failed to create remote signing service: %v", err)
-		// Create a basic instance for development
-		remoteSigningService = &service.RemoteSigningService{}
-	}
-	
-	// Convert config.Config to models.Config
-	modelConfig := &models.Config{
-		BiometricEnv:         cfg.Biometric.Environment,
-		BiometricResponseURL: cfg.Biometric.ResponseURL,
-		ConsentText:          cfg.Biometric.ConsentText,
-		AuthAttempts:         cfg.Auth.MaxAttempts,
-		OTPRetryAttempts:     cfg.Auth.OTPRetryAttempts,
-		Build:                cfg.Server.Version,
-		Environment:          cfg.Server.Environment,
-		RequestTimeout:       cfg.Server.RequestTimeout,
-		CheckStatusASPs:      cfg.CheckStatus.AllowedASPs,
-	}
-	
-	// Set RateLimit struct
-	modelConfig.RateLimit.EsignDoc = cfg.RateLimit.EsignDoc.Rate
-	modelConfig.RateLimit.CheckStatus = cfg.RateLimit.CheckStatus.Rate
-	modelConfig.RateLimit.Enabled = cfg.RateLimit.Enabled
-	modelConfig.RateLimit.WindowSize = 60
-	modelConfig.RateLimit.FallbackEnabled = false
-	
-	// Set Debug struct
-	modelConfig.Debug.LogLevel = "info"
-	modelConfig.Debug.LogRequests = cfg.Debug.LogRequests
-	modelConfig.Debug.LogResponses = cfg.Debug.LogResponses
-	
-	esignService := service.NewEsignService(esignRepo, aspRepo, xmlValidator, cryptoService, remoteSigningService, remoteSigningService, modelConfig)
-	kycService := service.NewKYCService(modelConfig, cryptoService)
-	
-	// Create session service
-	sessionService := service.NewSessionService(nil, "esign", 3600)
+// 	// Initialize services
+// 	xmlValidator := xmlparser.NewXMLValidator()
 
-	// Initialize rate limiter
-	rateLimiter := middleware.NewRateLimiter(cfg.RateLimit.Enabled)
+// 	// Load test keys for development - in production load from config
+// 	privateKey, err := os.ReadFile("test-keys/private.key")
+// 	if err != nil {
+// 		log.Printf("Warning: Failed to load private key: %v", err)
+// 		privateKey = []byte{}
+// 	}
 
-	// Initialize Gin router
-	router := gin.New()
+// 	certificate, err := os.ReadFile("test-keys/certificate.crt")
+// 	if err != nil {
+// 		log.Printf("Warning: Failed to load certificate: %v", err)
+// 		certificate = []byte{}
+// 	}
 
-	// Global middleware
-	router.Use(gin.Recovery())
-	router.Use(middleware.Logger())
-	router.Use(middleware.RequestID())
-	router.Use(middleware.CORS(cfg.CORS))
+// 	cryptoService, err := service.NewCryptoService(privateKey, certificate)
+// 	if err != nil {
+// 		log.Fatalf("Failed to create crypto service: %v", err)
+// 	}
+// 	templateService := service.NewTemplateService(cfg.Templates.Path)
 
-	// Static files
-	router.Static("/static", "./static")
-	router.LoadHTMLGlob("templates/*")
+// 	// Create remote signing service
+// 	// Load CA keys for development - in production load from config
+// 	caCert, err := os.ReadFile("test-keys/ca-certificate.crt")
+// 	if err != nil {
+// 		log.Printf("Warning: Failed to load CA certificate: %v", err)
+// 		caCert = []byte{}
+// 	}
 
-	// Initialize controllers
-	authController := controller.NewAuthenticateController(esignService, kycService, templateService, sessionService, modelConfig)
+// 	caKey, err := os.ReadFile("test-keys/ca-private.key")
+// 	if err != nil {
+// 		log.Printf("Warning: Failed to load CA private key: %v", err)
+// 		caKey = []byte{}
+// 	}
 
-	// Routes
-	api := router.Group("/authenticate")
-	{
-		// Apply rate limiting to esign-doc endpoint
-		api.POST("/esign-doc",
-			rateLimiter.Middleware("esign-doc", middleware.RateLimitRule{
-				Rate:     cfg.RateLimit.EsignDoc.Rate,
-				Duration: cfg.RateLimit.EsignDoc.Period,
-			}),
-			authController.EsignDoc,
-		)
+// 	remoteSigningService, err := service.NewRemoteSigningService(cryptoService, esignRepo, caCert, caKey)
+// 	if err != nil {
+// 		log.Printf("Warning: Failed to create remote signing service: %v", err)
+// 		// Create a basic instance for development
+// 		remoteSigningService = &service.RemoteSigningService{}
+// 	}
 
-		api.POST("/es", authController.ProcessEsign)
-		api.POST("/otp", authController.GenerateOTP)
-		api.POST("/otpAction", authController.VerifyOTP)
-		api.GET("/auth-ra", authController.AuthRA)
-		api.GET("/es-ra", authController.EsignRedirect)
-		api.POST("/postRequestdata", authController.BiometricAuth)
-		api.POST("/esignCancel", authController.CancelEsign)
-		api.GET("/sigError", authController.SignatureError)
-		api.POST("/check-status", authController.CheckStatus)
-		api.POST("/check-status-api", authController.CheckStatusAPI)
-	}
+// 	// Convert config.Config to models.Config
+// 	modelConfig := &models.Config{
+// 		BiometricEnv:         cfg.Biometric.Environment,
+// 		BiometricResponseURL: cfg.Biometric.ResponseURL,
+// 		ConsentText:          cfg.Biometric.ConsentText,
+// 		AuthAttempts:         cfg.Auth.MaxAttempts,
+// 		OTPRetryAttempts:     cfg.Auth.OTPRetryAttempts,
+// 		Build:                cfg.Server.Version,
+// 		Environment:          cfg.Server.Environment,
+// 		RequestTimeout:       cfg.Server.RequestTimeout,
+// 		CheckStatusASPs:      cfg.CheckStatus.AllowedASPs,
+// 	}
 
-	// Health check endpoint
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status": "healthy",
-			"build":  cfg.App.Build,
-			"time":   time.Now().UTC(),
-		})
-	})
+// 	// Set RateLimit struct
+// 	modelConfig.RateLimit.EsignDoc = cfg.RateLimit.EsignDoc.Rate
+// 	modelConfig.RateLimit.CheckStatus = cfg.RateLimit.CheckStatus.Rate
+// 	modelConfig.RateLimit.Enabled = cfg.RateLimit.Enabled
+// 	modelConfig.RateLimit.WindowSize = 60
+// 	modelConfig.RateLimit.FallbackEnabled = false
 
-	// Create HTTP server
-	srv := &http.Server{
-		Addr:         cfg.Server.Address,
-		Handler:      router,
-		ReadTimeout:  cfg.Server.ReadTimeout,
-		WriteTimeout: cfg.Server.WriteTimeout,
-		IdleTimeout:  cfg.Server.IdleTimeout,
-	}
+// 	// Set Debug struct
+// 	modelConfig.Debug.LogLevel = "info"
+// 	modelConfig.Debug.LogRequests = cfg.Debug.LogRequests
+// 	modelConfig.Debug.LogResponses = cfg.Debug.LogResponses
 
-	// Start server in goroutine
-	go func() {
-		logger.Info("Starting server on %s", srv.Addr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Fatal("Failed to start server: %v", err)
-		}
-	}()
+// 	esignService := service.NewEsignService(esignRepo, aspRepo, xmlValidator, cryptoService, remoteSigningService, remoteSigningService, modelConfig)
+// 	kycService := service.NewKYCService(modelConfig, cryptoService)
 
-	// Wait for interrupt signal to gracefully shutdown the server
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+// 	// Create session service
+// 	sessionService := service.NewSessionService(nil, "esign", 3600)
 
-	logger.Info("Shutting down server...")
+// 	// Initialize rate limiter
+// 	rateLimiter := middleware.NewRateLimiter(cfg.RateLimit.Enabled)
 
-	// Graceful shutdown with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+// 	// Initialize Gin router
+// 	router := gin.New()
 
-	if err := srv.Shutdown(ctx); err != nil {
-		logger.Error("Server forced to shutdown: %v", err)
-	}
+// 	// Global middleware
+// 	router.Use(gin.Recovery())
+// 	router.Use(middleware.Logger())
+// 	router.Use(middleware.RequestID())
+// 	router.Use(middleware.CORS(cfg.CORS))
 
-	logger.Info("Server exited")
-}
+// 	// Static files
+// 	router.Static("/static", "./static")
+// 	router.LoadHTMLGlob("templates/*")
+
+// 	// Initialize controllers
+// 	authController := controller.NewAuthenticateController(esignService, kycService, templateService, sessionService, modelConfig)
+
+// 	// Routes
+// 	api := router.Group("/authenticate")
+// 	{
+// 		// Apply rate limiting to esign-doc endpoint
+// 		api.POST("/esign-doc",
+// 			rateLimiter.Middleware("esign-doc", middleware.RateLimitRule{
+// 				Rate:     cfg.RateLimit.EsignDoc.Rate,
+// 				Duration: cfg.RateLimit.EsignDoc.Period,
+// 			}),
+// 			authController.EsignDoc,
+// 		)
+
+// 		api.POST("/es", authController.ProcessEsign)
+// 		api.POST("/otp", authController.GenerateOTP)
+// 		api.POST("/otpAction", authController.VerifyOTP)
+// 		api.GET("/auth-ra", authController.AuthRA)
+// 		api.GET("/es-ra", authController.EsignRedirect)
+// 		api.POST("/postRequestdata", authController.BiometricAuth)
+// 		api.POST("/esignCancel", authController.CancelEsign)
+// 		api.GET("/sigError", authController.SignatureError)
+// 		api.POST("/check-status", authController.CheckStatus)
+// 		api.POST("/check-status-api", authController.CheckStatusAPI)
+// 	}
+
+// 	// Health check endpoint
+// 	router.GET("/health", func(c *gin.Context) {
+// 		c.JSON(http.StatusOK, gin.H{
+// 			"status": "healthy",
+// 			"build":  cfg.App.Build,
+// 			"time":   time.Now().UTC(),
+// 		})
+// 	})
+
+// 	// Debug endpoint to test templates
+// 	router.GET("/debug/templates", func(c *gin.Context) {
+// 		c.HTML(http.StatusOK, "rd.html", gin.H{
+// 			"msg": "Test message",
+// 			"u":   "http://example.com",
+// 		})
+// 	})
+
+// 	// Create HTTP server
+// 	srv := &http.Server{
+// 		Addr:         cfg.Server.Address,
+// 		Handler:      router,
+// 		ReadTimeout:  cfg.Server.ReadTimeout,
+// 		WriteTimeout: cfg.Server.WriteTimeout,
+// 		IdleTimeout:  cfg.Server.IdleTimeout,
+// 	}
+
+// 	// Start server in goroutine
+// 	go func() {
+// 		logger.Info("Starting server on %s", srv.Addr)
+// 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+// 			logger.Fatal("Failed to start server: %v", err)
+// 		}
+// 	}()
+
+// 	// Wait for interrupt signal to gracefully shutdown the server
+// 	quit := make(chan os.Signal, 1)
+// 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+// 	<-quit
+
+// 	logger.Info("Shutting down server...")
+
+// 	// Graceful shutdown with timeout
+// 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+// 	defer cancel()
+
+// 	if err := srv.Shutdown(ctx); err != nil {
+// 		logger.Error("Server forced to shutdown: %v", err)
+// 	}
+
+// 	logger.Info("Server exited")
+// }

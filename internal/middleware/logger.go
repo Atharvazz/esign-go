@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"time"
 
 	"github.com/esign-go/pkg/logger"
@@ -117,6 +118,10 @@ func maskSensitiveData(data string) string {
 
 	masked := data
 	for pattern, replacement := range sensitivePatterns {
+
+		log.Println("Pattern:", pattern)
+		log.Println("Replacement:", replacement)
+
 		// Use regex to find and replace sensitive data
 		// In production, use proper regex library
 		// This is simplified for demonstration

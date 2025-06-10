@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Esign ver="2.1" sc="Y" ts="2025-06-09T15:00:00" txn="TEST-001" 
+       ekycIdType="A" ekycId="999999990019" aspId="TEST001" 
+       AuthMode="1" responseSigType="pkcs7" 
+       preVerified="n" organizationFlag="n" 
+       responseUrl="http://localhost:8080/callback">
+    <Docs>
+        <InputHash id="1" hashAlgorithm="SHA256" docInfo="Test Document">
+            YTVmM2M2ZDdlOGI5YTBjMWQyZTNmNGE1YjZjN2Q4ZTlmMGExYjJjM2Q0ZTVmNmE3YjhjOWQwZTFmMmEzYjRjNQ==
+        </InputHash>
+    </Docs>
+</Esign>

@@ -125,6 +125,74 @@ func RunMigrations(db *sql.DB) error {
 		`CREATE INDEX IF NOT EXISTS idx_transaction_sign ON signing_records (transaction_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_document ON signing_records (document_id)`,
 
+		// Esign requests table
+		`CREATE TABLE IF NOT EXISTS esign_requests (
+			id SERIAL PRIMARY KEY,
+			asp_id VARCHAR(50) NOT NULL,
+			txn VARCHAR(100) NOT NULL,
+			legal_name VARCHAR(255),
+			v1 VARCHAR(255),
+			v2 VARCHAR(255),
+			v3 VARCHAR(255),
+			response_url TEXT,
+			error_msg TEXT,
+			is_error BOOLEAN DEFAULT false,
+			is_resubmit BOOLEAN DEFAULT false,
+			otp_retry_attempts INTEGER DEFAULT 0,
+			auth_attempts INTEGER DEFAULT 0,
+			adr VARCHAR(255),
+			subject TEXT,
+			certificate_serial VARCHAR(100),
+			aum_id VARCHAR(50),
+			status INTEGER DEFAULT -1,
+			created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			cancel_reason TEXT,
+			error_code VARCHAR(50),
+			request_transition VARCHAR(50),
+			kyc_id BIGINT,
+			FOREIGN KEY (asp_id) REFERENCES asps(id)
+		)`,
+
+		// Create indexes for esign_requests
+		`CREATE INDEX IF NOT EXISTS idx_asp_txn_req ON esign_requests (asp_id, txn)`,
+		`CREATE INDEX IF NOT EXISTS idx_status_req ON esign_requests (status)`,
+		`CREATE INDEX IF NOT EXISTS idx_created_req ON esign_requests (created_on)`,
+
+		// Esign KYC details table
+		`CREATE TABLE IF NOT EXISTS esign_kyc_details (
+			id SERIAL PRIMARY KEY,
+			resident_name VARCHAR(255),
+			gender VARCHAR(10),
+			dob VARCHAR(20),
+			state VARCHAR(100),
+			postal_code VARCHAR(10),
+			address1 VARCHAR(255),
+			address2 VARCHAR(255),
+			address3 VARCHAR(255),
+			address4 VARCHAR(255),
+			locality VARCHAR(255),
+			photo_hash VARCHAR(64),
+			response_code VARCHAR(50),
+			token VARCHAR(255),
+			uid VARCHAR(100),
+			request_time TIMESTAMP,
+			response_time TIMESTAMP,
+			email VARCHAR(255),
+			mobile BIGINT,
+			photo TEXT
+		)`,
+
+		// Esign raw logs table
+		`CREATE TABLE IF NOT EXISTS esign_raw_logs (
+			id SERIAL PRIMARY KEY,
+			request_id BIGINT,
+			data TEXT,
+			type VARCHAR(50),
+			client_ip VARCHAR(45),
+			created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (request_id) REFERENCES esign_requests(id)
+		)`,
+
 		// Create update trigger for updated_at
 		`CREATE OR REPLACE FUNCTION update_updated_at_column()
 		RETURNS TRIGGER AS $$
@@ -134,14 +202,27 @@ func RunMigrations(db *sql.DB) error {
 		END;
 		$$ language 'plpgsql'`,
 
-		`CREATE TRIGGER update_asps_updated_at BEFORE UPDATE
-		ON asps FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()`,
+		`DO $$ 
+		BEGIN
+			IF NOT EXISTS (
+				SELECT 1 FROM pg_trigger 
+				WHERE tgname = 'update_asps_updated_at'
+			) THEN
+				CREATE TRIGGER update_asps_updated_at BEFORE UPDATE
+				ON asps FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+			END IF;
+		END $$;`,
 	}
 
 	// Execute migrations
-	for _, query := range queries {
+	for i, query := range queries {
 		if _, err := db.Exec(query); err != nil {
-			return fmt.Errorf("migration failed: %w", err)
+			// Get first 100 chars of query for debugging
+			queryPreview := query
+			if len(queryPreview) > 100 {
+				queryPreview = queryPreview[:100] + "..."
+			}
+			return fmt.Errorf("migration %d failed: %w (query: %s)", i, err, queryPreview)
 		}
 	}
 

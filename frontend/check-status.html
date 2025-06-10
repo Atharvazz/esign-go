@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Transaction Status</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+        
+        .status-initiated {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .status-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .status-failed {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .status-expired {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .result-card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);
+            margin-bottom: 1rem;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -21px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 2px solid white;
+            box-shadow: 0 0 0 3px #f8f9fa;
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 17px;
+            width: 1px;
+            height: calc(100% - 12px);
+            background: #dee2e6;
+        }
+        
+        .timeline-item:last-child::after {
+            display: none;
+        }
+        
+        .timeline-item.completed::before {
+            background: #28a745;
+        }
+        
+        .timeline-item.failed::before {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-0">Transaction Status Check</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 mt-2">
+                            <li class="breadcrumb-item"><a href="index.html" class="text-white">Home</a></li>
+                            <li class="breadcrumb-item active text-white-50">Check Status</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button class="btn btn-light btn-sm" onclick="window.location.href='index.html'">
+                        ← Back to Home
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <!-- Search Form -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">Check Transaction Status</h4>
+                        
+                        <ul class="nav nav-tabs mb-3" id="searchTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="single-tab" data-bs-toggle="tab" 
+                                        data-bs-target="#single" type="button">
+                                    Single Transaction
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="bulk-tab" data-bs-toggle="tab" 
+                                        data-bs-target="#bulk" type="button">
+                                    Bulk Check
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="searchTabContent">
+                            <!-- Single Transaction -->
+                            <div class="tab-pane fade show active" id="single">
+                                <form id="singleSearchForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">ASP ID</label>
+                                        <input type="text" class="form-control" id="aspId" 
+                                               value="TEST001" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Transaction ID</label>
+                                        <input type="text" class="form-control" id="txnId" 
+                                               placeholder="e.g., TEST-1234567890" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Check Status</button>
+                                </form>
+                            </div>
+                            
+                            <!-- Bulk Check -->
+                            <div class="tab-pane fade" id="bulk">
+                                <form id="bulkSearchForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">ASP ID</label>
+                                        <input type="text" class="form-control" id="bulkAspId" 
+                                               value="TEST001" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Transaction IDs (one per line)</label>
+                                        <textarea class="form-control" id="bulkTxnIds" rows="5" 
+                                                  placeholder="TEST-1234567890&#10;TEST-0987654321" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Check All Status</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div id="resultsSection" style="display: none;">
+                    <h4 class="mb-3">Status Results</h4>
+                    <div id="resultsContainer"></div>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Checking status...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Single transaction search
+        document.getElementById('singleSearchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const aspId = document.getElementById('aspId').value;
+            const txnId = document.getElementById('txnId').value;
+            
+            await checkStatus([txnId], aspId);
+        });
+
+        // Bulk transaction search
+        document.getElementById('bulkSearchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const aspId = document.getElementById('bulkAspId').value;
+            const txnIds = document.getElementById('bulkTxnIds').value
+                .split('\n')
+                .map(id => id.trim())
+                .filter(id => id);
+            
+            if (txnIds.length === 0) {
+                alert('Please enter at least one transaction ID');
+                return;
+            }
+            
+            await checkStatus(txnIds, aspId);
+        });
+
+        async function checkStatus(txnIds, aspId) {
+            // Show loading
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:8080/authenticate/check-status-api', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        aspId: aspId,
+                        transactions: txnIds
+                    })
+                });
+                
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to check status. Please ensure the server is running.');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        }
+
+        function displayResults(data) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            // For demo purposes, create mock data if no real data
+            const transactions = data.transactions || [
+                {
+                    txn: document.getElementById('txnId').value || 'TEST-1234567890',
+                    status: 'COMPLETED',
+                    timestamp: new Date().toISOString(),
+                    details: {
+                        requestTime: new Date(Date.now() - 300000).toISOString(),
+                        authMode: 'OTP',
+                        documentsCount: 1
+                    }
+                }
+            ];
+            
+            transactions.forEach(txn => {
+                const statusClass = getStatusClass(txn.status);
+                const card = document.createElement('div');
+                card.className = 'card result-card';
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">${txn.txn}</h5>
+                            <span class="status-badge ${statusClass}">${txn.status}</span>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Request Time</small>
+                                <p class="mb-0">${formatDate(txn.details?.requestTime)}</p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Response Time</small>
+                                <p class="mb-0">${formatDate(txn.timestamp)}</p>
+                            </div>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">Transaction Timeline</h6>
+                        <div class="timeline">
+                            ${generateTimeline(txn)}
+                        </div>
+                        
+                        <button class="btn btn-sm btn-outline-primary mt-3" 
+                                onclick="showDetails('${txn.txn}')">
+                            View Full Details
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'INITIATED':
+                    return 'status-initiated';
+                case 'COMPLETED':
+                case 'SIGNED':
+                    return 'status-success';
+                case 'FAILED':
+                    return 'status-failed';
+                case 'EXPIRED':
+                    return 'status-expired';
+                default:
+                    return 'status-initiated';
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+
+        function generateTimeline(txn) {
+            const steps = [
+                { name: 'Request Initiated', completed: true, timestamp: txn.details?.requestTime },
+                { name: 'Authentication Started', completed: txn.status !== 'INITIATED' },
+                { name: 'KYC Verification', completed: ['COMPLETED', 'SIGNED'].includes(txn.status) },
+                { name: 'Document Signed', completed: txn.status === 'SIGNED' },
+                { name: 'Response Sent', completed: txn.status === 'COMPLETED' }
+            ];
+            
+            return steps.map(step => {
+                const itemClass = step.completed ? 'completed' : '';
+                return `
+                    <div class="timeline-item ${itemClass}">
+                        <strong>${step.name}</strong>
+                        ${step.timestamp ? `<br><small class="text-muted">${formatDate(step.timestamp)}</small>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showDetails(txnId) {
+            alert(`Full details for transaction ${txnId} would be shown here.\nThis could include:\n- Complete request/response XML\n- Error details if any\n- Certificate information\n- Audit trail`);
+        }
+    </script>
+</body>
+</html>

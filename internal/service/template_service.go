@@ -5,398 +5,316 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/esign-go/internal/models"
+	"github.com/esign-go/pkg/errors"
+	"github.com/esign-go/pkg/logger"
 )
 
-// TemplateService implements the ITemplateService interface
+// TemplateService implements ITemplateService interface
 type TemplateService struct {
-	templatePath string
-	templates    map[string]*template.Template
-	mu           sync.RWMutex
-	cacheEnabled bool
+	templates   map[string]*template.Template
+	templateDir string
+	customViews map[string]map[string]*models.Template // aspID -> templateID -> template
+	mu          sync.RWMutex
 }
 
-// NewTemplateService creates a new template service
-func NewTemplateService(templatePath string) *TemplateService {
+// NewTemplateService creates a new template service instance
+func NewTemplateService(templateDir string) *TemplateService {
 	return &TemplateService{
-		templatePath: templatePath,
-		templates:    make(map[string]*template.Template),
-		cacheEnabled: true,
+		templates:   make(map[string]*template.Template),
+		templateDir: templateDir,
+		customViews: make(map[string]map[string]*models.Template),
 	}
 }
 
-// RenderCustomView renders a custom view template
-func (ts *TemplateService) RenderCustomView(templateID string, data interface{}) ([]byte, error) {
-	// Load template
-	tmpl, err := ts.loadTemplate(templateID)
+// RenderCustomView renders a custom view template for an ASP
+func (s *TemplateService) RenderCustomView(aspID, templateID string, params map[string]string, authMode string) (string, error) {
+	log := logger.GetLogger()
+
+	// Get template
+	tmpl, err := s.GetTemplate(aspID, templateID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load template: %w", err)
+		log.WithError(err).Error("Failed to get template")
+		return "", err
 	}
 
-	// Render template
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, data); err != nil {
-		return nil, fmt.Errorf("failed to render template: %w", err)
+	// Check if template supports the auth mode
+	if !s.supportsAuthMode(tmpl, authMode) {
+		return "", errors.NewValidationError(fmt.Sprintf("Template does not support auth mode: %s", authMode))
 	}
 
-	return buf.Bytes(), nil
+	// Process template
+	result, err := s.ProcessTemplate(tmpl, params)
+	if err != nil {
+		log.WithError(err).Error("Failed to process template")
+		return "", err
+	}
+
+	return result, nil
 }
 
-// LoadTemplate loads a template by ID
-func (ts *TemplateService) LoadTemplate(templateID string) (string, error) {
-	// Construct template path
-	templatePath := filepath.Join(ts.templatePath, templateID+".html")
+// GetTemplate retrieves a template by ASP ID and template ID
+func (s *TemplateService) GetTemplate(aspID, templateID string) (*models.Template, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	// Read template file
-	content, err := ioutil.ReadFile(templatePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to read template file: %w", err)
-	}
-
-	return string(content), nil
-}
-
-// RegisterTemplate registers a new template
-func (ts *TemplateService) RegisterTemplate(templateID, templateContent string) error {
-	// Parse template
-	tmpl, err := template.New(templateID).Parse(templateContent)
-	if err != nil {
-		return fmt.Errorf("failed to parse template: %w", err)
-	}
-
-	// Store in cache
-	ts.mu.Lock()
-	ts.templates[templateID] = tmpl
-	ts.mu.Unlock()
-
-	// Optionally save to file
-	if ts.templatePath != "" {
-		templatePath := filepath.Join(ts.templatePath, templateID+".html")
-		if err := ioutil.WriteFile(templatePath, []byte(templateContent), 0644); err != nil {
-			return fmt.Errorf("failed to save template file: %w", err)
+	// Check custom views first
+	if aspTemplates, ok := s.customViews[aspID]; ok {
+		if tmpl, ok := aspTemplates[templateID]; ok {
+			return tmpl, nil
 		}
+	}
+
+	// Try to load from file system
+	tmpl, err := s.loadTemplateFromFile(aspID, templateID)
+	if err != nil {
+		return nil, fmt.Errorf("template not found: %s/%s", aspID, templateID)
+	}
+
+	// Cache the loaded template
+	s.cacheTemplate(aspID, templateID, tmpl)
+
+	return tmpl, nil
+}
+
+// ProcessTemplate processes a template with the given parameters
+func (s *TemplateService) ProcessTemplate(tmpl *models.Template, params map[string]string) (string, error) {
+	// Validate required parameters
+	for _, varName := range tmpl.Variables {
+		if _, ok := params[varName]; !ok && isRequiredVariable(varName) {
+			return "", errors.NewValidationError(fmt.Sprintf("Missing required parameter: %s", varName))
+		}
+	}
+
+	// Parse template content
+	t, err := template.New(tmpl.ID).Parse(tmpl.Content)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse template: %w", err)
+	}
+
+	// Add helper functions
+	t = t.Funcs(s.getTemplateFuncs())
+
+	// Execute template
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, params); err != nil {
+		return "", fmt.Errorf("failed to execute template: %w", err)
+	}
+
+	return buf.String(), nil
+}
+
+// LoadDefaultTemplates loads default templates from the file system
+func (s *TemplateService) LoadDefaultTemplates() error {
+	log := logger.GetLogger()
+
+	// Default template names
+	defaultTemplates := []string{
+		"auth",
+		"auth_biometric",
+		"auth_biometric_iris",
+		"authFail",
+		"rd",
+		"esignFailed",
+		"sigError",
+	}
+
+	for _, tmplName := range defaultTemplates {
+		tmplPath := filepath.Join(s.templateDir, tmplName)
+		content, err := ioutil.ReadFile(tmplPath)
+		if err != nil {
+			log.WithError(err).Warnf("Failed to load default template: %s", tmplName)
+			continue
+		}
+
+		// Parse and cache template
+		tmpl, err := template.New(tmplName).Parse(string(content))
+		if err != nil {
+			log.WithError(err).Errorf("Failed to parse template: %s", tmplName)
+			continue
+		}
+
+		s.templates[tmplName] = tmpl
 	}
 
 	return nil
 }
 
-// loadTemplate loads a template with caching
-func (ts *TemplateService) loadTemplate(templateID string) (*template.Template, error) {
-	// Check cache first
-	if ts.cacheEnabled {
-		ts.mu.RLock()
-		tmpl, exists := ts.templates[templateID]
-		ts.mu.RUnlock()
+// RegisterCustomView registers a custom view template for an ASP
+func (s *TemplateService) RegisterCustomView(aspID string, tmpl *models.Template) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-		if exists {
-			return tmpl, nil
-		}
+	// Validate template
+	if err := s.validateTemplate(tmpl); err != nil {
+		return err
 	}
 
-	// Load from file
-	content, err := ts.LoadTemplate(templateID)
+	// Initialize ASP templates map if needed
+	if _, ok := s.customViews[aspID]; !ok {
+		s.customViews[aspID] = make(map[string]*models.Template)
+	}
+
+	// Store template
+	s.customViews[aspID][tmpl.ID] = tmpl
+
+	return nil
+}
+
+// Helper methods
+
+func (s *TemplateService) loadTemplateFromFile(aspID, templateID string) (*models.Template, error) {
+	// Construct file path
+	tmplPath := filepath.Join(s.templateDir, "custom", aspID, templateID+".html")
+
+	// Read file
+	content, err := ioutil.ReadFile(tmplPath)
 	if err != nil {
 		return nil, err
 	}
 
-	// Parse template with custom functions
-	tmpl, err := template.New(templateID).Funcs(ts.getTemplateFuncs()).Parse(content)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse template: %w", err)
+	// Parse metadata from content (if embedded)
+	tmpl := &models.Template{
+		ID:      templateID,
+		AspID:   aspID,
+		Name:    templateID,
+		Content: string(content),
 	}
 
-	// Cache template
-	if ts.cacheEnabled {
-		ts.mu.Lock()
-		ts.templates[templateID] = tmpl
-		ts.mu.Unlock()
+	// Extract variables from template
+	tmpl.Variables = s.extractVariables(tmpl.Content)
+
+	// Default auth modes if not specified
+	if len(tmpl.AuthModes) == 0 {
+		tmpl.AuthModes = []string{"1", "2", "3"} // OTP, Bio, Iris
 	}
 
 	return tmpl, nil
 }
 
-// getTemplateFuncs returns custom template functions
-func (ts *TemplateService) getTemplateFuncs() template.FuncMap {
-	return template.FuncMap{
-		"upper":       strings.ToUpper,
-		"lower":       strings.ToLower,
-		"title":       strings.Title,
-		"trim":        strings.TrimSpace,
-		"replace":     strings.ReplaceAll,
-		"contains":    strings.Contains,
-		"hasPrefix":   strings.HasPrefix,
-		"hasSuffix":   strings.HasSuffix,
-		"maskAadhaar": maskAadhaar,
-		"formatDate":  formatDate,
-		"formatTime":  formatTime,
-		"safeHTML":    safeHTML,
-		"safeURL":     safeURL,
-		"safeJS":      safeJS,
-	}
-}
+func (s *TemplateService) cacheTemplate(aspID, templateID string, tmpl *models.Template) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-// Template helper functions
-
-func maskAadhaar(aadhaar string) string {
-	if len(aadhaar) < 4 {
-		return aadhaar
-	}
-	return "XXXX-XXXX-" + aadhaar[len(aadhaar)-4:]
-}
-
-func formatDate(t interface{}) string {
-	switch v := t.(type) {
-	case string:
-		return v
-	case int64:
-		return fmt.Sprintf("%d", v)
-	default:
-		return fmt.Sprintf("%v", t)
-	}
-}
-
-func formatTime(t interface{}) string {
-	switch v := t.(type) {
-	case string:
-		return v
-	case int64:
-		return fmt.Sprintf("%d", v)
-	default:
-		return fmt.Sprintf("%v", t)
-	}
-}
-
-func safeHTML(s string) template.HTML {
-	return template.HTML(s)
-}
-
-func safeURL(s string) template.URL {
-	return template.URL(s)
-}
-
-func safeJS(s string) template.JS {
-	return template.JS(s)
-}
-
-// DefaultTemplateRenderer provides default template rendering
-type DefaultTemplateRenderer struct {
-	templates map[string]string
-}
-
-// NewDefaultTemplateRenderer creates a new default template renderer
-func NewDefaultTemplateRenderer() *DefaultTemplateRenderer {
-	return &DefaultTemplateRenderer{
-		templates: getDefaultTemplates(),
-	}
-}
-
-// Render renders a default template
-func (dtr *DefaultTemplateRenderer) Render(templateName string, data interface{}) ([]byte, error) {
-	tmplContent, exists := dtr.templates[templateName]
-	if !exists {
-		return nil, fmt.Errorf("template not found: %s", templateName)
+	if _, ok := s.customViews[aspID]; !ok {
+		s.customViews[aspID] = make(map[string]*models.Template)
 	}
 
-	tmpl, err := template.New(templateName).Parse(tmplContent)
+	s.customViews[aspID][templateID] = tmpl
+}
+
+func (s *TemplateService) supportsAuthMode(tmpl *models.Template, authMode string) bool {
+	for _, mode := range tmpl.AuthModes {
+		if mode == authMode {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *TemplateService) validateTemplate(tmpl *models.Template) error {
+	if tmpl.ID == "" {
+		return errors.NewValidationError("Template ID is required")
+	}
+
+	if tmpl.Content == "" {
+		return errors.NewValidationError("Template content is required")
+	}
+
+	// Validate template syntax
+	if _, err := template.New(tmpl.ID).Parse(tmpl.Content); err != nil {
+		return errors.NewValidationError(fmt.Sprintf("Invalid template syntax: %v", err))
+	}
+
+	return nil
+}
+
+func (s *TemplateService) extractVariables(content string) []string {
+	// Extract template variables using regex or template parsing
+	vars := make(map[string]bool)
+
+	// Simple extraction of {{.Variable}} patterns
+	// In production, use proper template parsing
+	tmpl, err := template.New("temp").Parse(content)
+	log.Println("Template parsed successfully", tmpl)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse template: %w", err)
+		return []string{}
 	}
 
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, data); err != nil {
-		return nil, fmt.Errorf("failed to render template: %w", err)
+	// Get all actions from the template tree
+	// This is a simplified approach
+	commonVars := []string{
+		"rid", "contextPath", "msg1", "msg3", "msg4",
+		"v1", "v2", "v3", "ln", "bioEnv", "adr",
+		"authMod", "sid", "build",
 	}
 
-	return buf.Bytes(), nil
+	for _, v := range commonVars {
+		if strings.Contains(content, "{{."+v+"}}") || strings.Contains(content, "{{ ."+v+" }}") {
+			vars[v] = true
+		}
+	}
+
+	// Convert to slice
+	result := make([]string, 0, len(vars))
+	for v := range vars {
+		result = append(result, v)
+	}
+
+	return result
 }
 
-// getDefaultTemplates returns default template definitions
-func getDefaultTemplates() map[string]string {
-	return map[string]string{
-		"esign_auth": defaultEsignAuthTemplate,
-		"otp_input":  defaultOTPInputTemplate,
-		"success":    defaultSuccessTemplate,
-		"error":      defaultErrorTemplate,
+func (s *TemplateService) getTemplateFuncs() template.FuncMap {
+	return template.FuncMap{
+		"upper":    strings.ToUpper,
+		"lower":    strings.ToLower,
+		"trim":     strings.TrimSpace,
+		"contains": strings.Contains,
+		"replace":  strings.Replace,
+		"split":    strings.Split,
+		"join":     strings.Join,
+		"default": func(defaultVal, val string) string {
+			if val == "" {
+				return defaultVal
+			}
+			return val
+		},
+		"mask": func(val string, showLast int) string {
+			if len(val) <= showLast {
+				return val
+			}
+			masked := strings.Repeat("*", len(val)-showLast)
+			return masked + val[len(val)-showLast:]
+		},
+		"formatDate": func(date, format string) string {
+			// Simple date formatting
+			return date
+		},
 	}
 }
 
-// Default template definitions
-const (
-	defaultEsignAuthTemplate = `<!DOCTYPE html>
-<html>
-<head>
-    <title>eSign Authentication</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 8px; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        .error { color: red; }
-        .info { background: #e9ecef; padding: 10px; margin-bottom: 20px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>eSign Authentication</h1>
-        <div class="info">
-            <p><strong>Transaction ID:</strong> {{.aspTxnId}}</p>
-            <p><strong>ASP ID:</strong> {{.aspId}}</p>
-        </div>
-        
-        <form method="POST" action="{{.contextPath}}/authenticate/es">
-            <input type="hidden" name="requestId" value="{{.requestId}}">
-            
-            <div class="form-group">
-                <label for="aadhaar">Aadhaar Number:</label>
-                <input type="text" id="aadhaar" name="aadhaar" pattern="[0-9]{12}" maxlength="12" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="authMode">Authentication Mode:</label>
-                <select id="authMode" name="authMode" required>
-                    <option value="OTP">OTP</option>
-                    <option value="BIO">Biometric</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" name="consent" value="Y" required>
-                    I consent to authenticate and sign the documents
-                </label>
-            </div>
-            
-            <button type="submit">Authenticate</button>
-        </form>
-    </div>
-</body>
-</html>`
+func isRequiredVariable(varName string) bool {
+	// Define which variables are required
+	required := map[string]bool{
+		"rid":     true,
+		"msg1":    true,
+		"msg3":    true,
+		"authMod": true,
+	}
 
-	defaultOTPInputTemplate = `<!DOCTYPE html>
-<html>
-<head>
-    <title>Enter OTP</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 400px; margin: 0 auto; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input[type="text"] { width: 100%; padding: 8px; font-size: 18px; text-align: center; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        .info { background: #e9ecef; padding: 10px; margin-bottom: 20px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Enter OTP</h1>
-        <div class="info">
-            <p>OTP has been sent to your registered mobile number: {{.maskedMobile}}</p>
-        </div>
-        
-        <form method="POST" action="/authenticate/validate-otp">
-            <input type="hidden" name="txnId" value="{{.txnId}}">
-            <input type="hidden" name="aadhaar" value="{{.aadhaar}}">
-            
-            <div class="form-group">
-                <label for="otp">Enter OTP:</label>
-                <input type="text" id="otp" name="otp" pattern="[0-9]{6}" maxlength="6" required autofocus>
-            </div>
-            
-            <button type="submit">Verify OTP</button>
-        </form>
-    </div>
-</body>
-</html>`
+	return required[varName]
+}
 
-	defaultSuccessTemplate = `<!DOCTYPE html>
-<html>
-<head>
-    <title>eSign Successful</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .success { background: #d4edda; color: #155724; padding: 15px; margin-bottom: 20px; }
-        .details { background: #f8f9fa; padding: 15px; }
-        .details dt { font-weight: bold; }
-        .details dd { margin-bottom: 10px; }
-    </style>
-    <script>
-        // Auto-redirect after 5 seconds
-        setTimeout(function() {
-            window.location.href = '{{.redirectUrl}}';
-        }, 5000);
-    </script>
-</head>
-<body>
-    <div class="container">
-        <div class="success">
-            <h1>Documents Signed Successfully!</h1>
-            <p>Your documents have been digitally signed.</p>
-        </div>
-        
-        <div class="details">
-            <h2>Details</h2>
-            <dl>
-                <dt>Transaction ID:</dt>
-                <dd>{{.response.RequestID}}</dd>
-                
-                <dt>Status:</dt>
-                <dd>{{.response.Status}}</dd>
-                
-                <dt>Timestamp:</dt>
-                <dd>{{.response.Timestamp}}</dd>
-                
-                <dt>Documents Signed:</dt>
-                <dd>{{len .response.SignedDocs}}</dd>
-            </dl>
-        </div>
-        
-        <p>You will be redirected in 5 seconds...</p>
-    </div>
-</body>
-</html>`
+// GetStandardTemplate returns a standard template by name
+func (s *TemplateService) GetStandardTemplate(name string) (*template.Template, error) {
+	if tmpl, ok := s.templates[name]; ok {
+		return tmpl, nil
+	}
 
-	defaultErrorTemplate = `<!DOCTYPE html>
-<html>
-<head>
-    <title>Error</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .error { background: #f8d7da; color: #721c24; padding: 15px; margin-bottom: 20px; }
-        .details { background: #f8f9fa; padding: 15px; }
-        button { padding: 10px 20px; background: #dc3545; color: white; border: none; cursor: pointer; }
-        button:hover { background: #c82333; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="error">
-            <h1>Error Occurred</h1>
-            <p>{{.error}}</p>
-        </div>
-        
-        <div class="details">
-            <p><strong>Error Type:</strong> {{.errorType}}</p>
-            <p><strong>Request ID:</strong> {{.requestId}}</p>
-        </div>
-        
-        <button onclick="window.history.back()">Go Back</button>
-    </div>
-</body>
-</html>`
-)
+	return nil, fmt.Errorf("standard template not found: %s", name)
+}

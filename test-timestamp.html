@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Timestamp</title>
+</head>
+<body>
+    <h3>Timestamp Format Test</h3>
+    <p>Original ISO: <span id="original"></span></p>
+    <p>Fixed Format: <span id="fixed"></span></p>
+    
+    <script>
+        const original = new Date().toISOString();
+        const fixed = new Date().toISOString().replace(/\.\d{3}Z/, 'Z');
+        
+        document.getElementById('original').textContent = original;
+        document.getElementById('fixed').textContent = fixed;
+        
+        console.log('Original:', original);
+        console.log('Fixed:', fixed);
+    </script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline KYC Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+            text-align: center;
+        }
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #1565c0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Offline KYC Authentication</h1>
+        
+        <div class="info">
+            <strong>Note:</strong> Please enter your Aadhaar number to proceed with offline KYC verification.
+        </div>
+        
+        <form id="okycForm" method="POST" action="/authenticate/okycOtp">
+            <input type="hidden" name="requestId" value="{{.rid}}">
+            
+            <div class="form-group">
+                <label for="aadhaar">Aadhaar Number</label>
+                <input type="tel" id="aadhaar" name="aadhaar" maxlength="12" pattern="[0-9]{12}" 
+                       placeholder="Enter 12-digit Aadhaar number" required>
+            </div>
+            
+            <button type="submit" class="btn">Generate OTP</button>
+        </form>
+    </div>
+    
+    <script>
+        // Format Aadhaar number input
+        document.getElementById('aadhaar').addEventListener('input', function(e) {
+            var value = e.target.value.replace(/\s/g, '');
+            var formattedValue = value.match(/.{1,4}/g);
+            if (formattedValue) {
+                e.target.value = formattedValue.join(' ');
+            }
+        });
+    </script>
+</body>
+</html>

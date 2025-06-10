@@ -93,6 +93,30 @@ type (
 		Line    int
 		Column  int
 	}
+
+	// KYCAuthenticationError represents a KYC authentication failure
+	KYCAuthenticationError struct {
+		Message      string
+		ResponseCode string
+	}
+
+	// KYCServiceError represents a KYC service error
+	KYCServiceError struct {
+		Message string
+		Err     error
+	}
+
+	// ProcessingError represents a processing error
+	ProcessingError struct {
+		Message string
+		Code    string
+	}
+
+	// SystemError represents a system error
+	SystemError struct {
+		Message string
+		Code    string
+	}
 )
 
 // Error implementations
@@ -181,6 +205,34 @@ func (e *SignatureError) Error() string {
 func (e *XMLError) Error() string {
 	if e.Line > 0 && e.Column > 0 {
 		return fmt.Sprintf("XML error at line %d, column %d: %s", e.Line, e.Column, e.Message)
+	}
+	return e.Message
+}
+
+func (e *KYCAuthenticationError) Error() string {
+	if e.ResponseCode != "" {
+		return fmt.Sprintf("KYC authentication failed [%s]: %s", e.ResponseCode, e.Message)
+	}
+	return e.Message
+}
+
+func (e *KYCServiceError) Error() string {
+	if e.Err != nil {
+		return fmt.Sprintf("KYC service error: %s (cause: %v)", e.Message, e.Err)
+	}
+	return e.Message
+}
+
+func (e *ProcessingError) Error() string {
+	if e.Code != "" {
+		return fmt.Sprintf("processing error [%s]: %s", e.Code, e.Message)
+	}
+	return e.Message
+}
+
+func (e *SystemError) Error() string {
+	if e.Code != "" {
+		return fmt.Sprintf("system error [%s]: %s", e.Code, e.Message)
 	}
 	return e.Message
 }
@@ -289,6 +341,37 @@ func NewXMLError(format string, args ...interface{}) *XMLError {
 	}
 }
 
+// NewKYCAuthenticationError creates a new KYC authentication error
+func NewKYCAuthenticationError(message string) *KYCAuthenticationError {
+	return &KYCAuthenticationError{
+		Message: message,
+	}
+}
+
+// NewKYCServiceError creates a new KYC service error
+func NewKYCServiceError(message string, err error) *KYCServiceError {
+	return &KYCServiceError{
+		Message: message,
+		Err:     err,
+	}
+}
+
+// NewProcessingError creates a new processing error
+func NewProcessingError(code, message string) *ProcessingError {
+	return &ProcessingError{
+		Code:    code,
+		Message: message,
+	}
+}
+
+// NewSystemError creates a new system error
+func NewSystemError(code, message string) *SystemError {
+	return &SystemError{
+		Code:    code,
+		Message: message,
+	}
+}
+
 // Helper functions
 
 // IsValidationError checks if error is a validation error
@@ -349,4 +432,229 @@ func IsUIDAIError(err error) bool {
 func IsMaxAttemptsError(err error) bool {
 	_, ok := err.(*MaxAttemptsError)
 	return ok
+}
+
+// Additional error types to match Java implementation
+
+// ASPAuthenticationException represents ASP authentication errors
+type ASPAuthenticationException struct {
+	Code    string
+	Message string
+	Cause   error
+}
+
+func (e *ASPAuthenticationException) Error() string {
+	if e.Cause != nil {
+		return fmt.Sprintf("ASP authentication error %s: %s - %v", e.Code, e.Message, e.Cause)
+	}
+	return fmt.Sprintf("ASP authentication error %s: %s", e.Code, e.Message)
+}
+
+// NewASPAuthenticationException creates a new ASP authentication exception
+func NewASPAuthenticationException(code, message string) *ASPAuthenticationException {
+	return &ASPAuthenticationException{
+		Code:    code,
+		Message: message,
+	}
+}
+
+// ASPSignatureVerificationException represents ASP signature verification errors
+type ASPSignatureVerificationException struct {
+	Code    string
+	Message string
+	Cause   error
+}
+
+func (e *ASPSignatureVerificationException) Error() string {
+	if e.Cause != nil {
+		return fmt.Sprintf("ASP signature verification error %s: %s - %v", e.Code, e.Message, e.Cause)
+	}
+	return fmt.Sprintf("ASP signature verification error %s: %s", e.Code, e.Message)
+}
+
+// NewASPSignatureVerificationException creates a new ASP signature verification exception
+func NewASPSignatureVerificationException(code, message string, cause error) *ASPSignatureVerificationException {
+	return &ASPSignatureVerificationException{
+		Code:    code,
+		Message: message,
+		Cause:   cause,
+	}
+}
+
+// ESPDatabaseException represents database errors
+type ESPDatabaseException struct {
+	Code    string
+	Message string
+	Cause   error
+}
+
+func (e *ESPDatabaseException) Error() string {
+	if e.Cause != nil {
+		return fmt.Sprintf("Database error %s: %s - %v", e.Code, e.Message, e.Cause)
+	}
+	return fmt.Sprintf("Database error %s: %s", e.Code, e.Message)
+}
+
+// NewESPDatabaseException creates a new database exception
+func NewESPDatabaseException(message string, cause error) *ESPDatabaseException {
+	return &ESPDatabaseException{
+		Code:    "ESP_DB_ERROR",
+		Message: message,
+		Cause:   cause,
+	}
+}
+
+// ESignXmlResponseException represents XML response errors
+type ESignXmlResponseException struct {
+	Code    string
+	Message string
+	Cause   error
+}
+
+func (e *ESignXmlResponseException) Error() string {
+	if e.Cause != nil {
+		return fmt.Sprintf("XML response error %s: %s - %v", e.Code, e.Message, e.Cause)
+	}
+	return fmt.Sprintf("XML response error %s: %s", e.Code, e.Message)
+}
+
+// NewESignXmlResponseException creates a new XML response exception
+func NewESignXmlResponseException(message string, cause error) *ESignXmlResponseException {
+	return &ESignXmlResponseException{
+		Code:    "ESP_XML_ERROR",
+		Message: message,
+		Cause:   cause,
+	}
+}
+
+// XMLValidationException represents XML validation errors
+type XMLValidationException struct {
+	Code    string
+	Message string
+	Cause   error
+}
+
+func (e *XMLValidationException) Error() string {
+	if e.Cause != nil {
+		return fmt.Sprintf("XML validation error %s: %s - %v", e.Code, e.Message, e.Cause)
+	}
+	return fmt.Sprintf("XML validation error %s: %s", e.Code, e.Message)
+}
+
+// NewXMLValidationException creates a new XML validation exception
+func NewXMLValidationException(message string, cause error) *XMLValidationException {
+	return &XMLValidationException{
+		Code:    "ESP_XML_VALIDATION",
+		Message: message,
+		Cause:   cause,
+	}
+}
+
+// NSDLESPServiceException represents NSDL ESP service errors
+type NSDLESPServiceException struct {
+	Code    string
+	Message string
+	Cause   error
+}
+
+func (e *NSDLESPServiceException) Error() string {
+	if e.Cause != nil {
+		return fmt.Sprintf("NSDL ESP service error %s: %s - %v", e.Code, e.Message, e.Cause)
+	}
+	return fmt.Sprintf("NSDL ESP service error %s: %s", e.Code, e.Message)
+}
+
+// NewNSDLESPServiceException creates a new NSDL ESP service exception
+func NewNSDLESPServiceException(message string, cause error) *NSDLESPServiceException {
+	return &NSDLESPServiceException{
+		Code:    "ESP_SERVICE_ERROR",
+		Message: message,
+		Cause:   cause,
+	}
+}
+
+// EnvelopAuthValidationException represents envelope authentication validation errors
+type EnvelopAuthValidationException struct {
+	Code    string
+	Message string
+	Cause   error
+}
+
+func (e *EnvelopAuthValidationException) Error() string {
+	if e.Cause != nil {
+		return fmt.Sprintf("Envelope auth validation error %s: %s - %v", e.Code, e.Message, e.Cause)
+	}
+	return fmt.Sprintf("Envelope auth validation error %s: %s", e.Code, e.Message)
+}
+
+// NewEnvelopAuthValidationException creates a new envelope auth validation exception
+func NewEnvelopAuthValidationException(message string) *EnvelopAuthValidationException {
+	return &EnvelopAuthValidationException{
+		Code:    "ENV_AUTH_ERROR",
+		Message: message,
+	}
+}
+
+// AuditFailureException represents audit failure errors
+type AuditFailureException struct {
+	Code    string
+	Message string
+	Cause   error
+}
+
+func (e *AuditFailureException) Error() string {
+	if e.Cause != nil {
+		return fmt.Sprintf("Audit failure %s: %s - %v", e.Code, e.Message, e.Cause)
+	}
+	return fmt.Sprintf("Audit failure %s: %s", e.Code, e.Message)
+}
+
+// NewAuditFailureException creates a new audit failure exception
+func NewAuditFailureException(message string, cause error) *AuditFailureException {
+	return &AuditFailureException{
+		Code:    "AUDIT_FAILURE",
+		Message: message,
+		Cause:   cause,
+	}
+}
+
+// KUAServiceException represents KUA service errors
+type KUAServiceException struct {
+	Code    string
+	Message string
+	Cause   error
+}
+
+func (e *KUAServiceException) Error() string {
+	if e.Cause != nil {
+		return fmt.Sprintf("KUA service error %s: %s - %v", e.Code, e.Message, e.Cause)
+	}
+	return fmt.Sprintf("KUA service error %s: %s", e.Code, e.Message)
+}
+
+// NewKUAServiceException creates a new KUA service exception
+func NewKUAServiceException(message string, cause error) *KUAServiceException {
+	return &KUAServiceException{
+		Code:    "KUA_SERVICE_ERROR",
+		Message: message,
+		Cause:   cause,
+	}
+}
+
+// UIDAINonSkipableAuthenticationException represents non-skippable UIDAI errors
+type UIDAINonSkipableAuthenticationException struct {
+	Code    string
+	Message string
+}
+
+func (e *UIDAINonSkipableAuthenticationException) Error() string {
+	return fmt.Sprintf("UIDAI non-skippable error %s: %s", e.Code, e.Message)
+}
+
+// NewUIDAINonSkipableAuthenticationException creates a new non-skippable UIDAI error
+func NewUIDAINonSkipableAuthenticationException(code, message string) *UIDAINonSkipableAuthenticationException {
+	return &UIDAINonSkipableAuthenticationException{
+		Code:    code,
+		Message: message,
+	}
 }

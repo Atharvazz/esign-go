@@ -1,0 +1,155 @@
+2025/06/09 18:06:27 Working Directory: /Users/atharvaz/Documents/ESIGN_FINAL/esign-go
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (5 handlers)
+[GIN-debug] HEAD   /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (5 handlers)
+2025/06/09 18:06:27 Loading templates from: /Users/atharvaz/Documents/ESIGN_FINAL/esign-go/templates/*
+2025/06/09 18:06:27 Found 17 template files:
+2025/06/09 18:06:27   - auth.html
+2025/06/09 18:06:27   - authExpired.html
+2025/06/09 18:06:27   - authFail.html
+2025/06/09 18:06:27   - auth_biometric.html
+2025/06/09 18:06:27   - auth_biometric_iris.html
+2025/06/09 18:06:27   - auth_okyc.html
+2025/06/09 18:06:27   - error.html
+2025/06/09 18:06:27   - esign-cancel.html
+2025/06/09 18:06:27   - esign-cancelled.html
+2025/06/09 18:06:27   - esign-failed.html
+2025/06/09 18:06:27   - esign-success.html
+2025/06/09 18:06:27   - esignFailed.html
+2025/06/09 18:06:27   - otp_auth.html
+2025/06/09 18:06:27   - otp_input.html
+2025/06/09 18:06:27   - rd.html
+2025/06/09 18:06:27   - sigError.html
+2025/06/09 18:06:27   - success.html
+[GIN-debug] Loaded HTML Templates (18): 
+	- auth_okyc.html
+	- esign-failed.html
+	- 
+	- auth.html
+	- auth_biometric_iris.html
+	- otp_input.html
+	- authExpired.html
+	- error.html
+	- esign-cancel.html
+	- esign-success.html
+	- otp_auth.html
+	- rd.html
+	- sigError.html
+	- success.html
+	- authFail.html
+	- auth_biometric.html
+	- esign-cancelled.html
+	- esignFailed.html
+
+[GIN-debug] POST   /authenticate/esign-doc   --> github.com/esign-go/internal/controller.(*AuthenticateController).EsignDoc-fm (6 handlers)
+[GIN-debug] POST   /authenticate/es          --> github.com/esign-go/internal/controller.(*AuthenticateController).ProcessEsign-fm (5 handlers)
+[GIN-debug] POST   /authenticate/otp         --> github.com/esign-go/internal/controller.(*AuthenticateController).GenerateOTP-fm (5 handlers)
+[GIN-debug] POST   /authenticate/otpAction   --> github.com/esign-go/internal/controller.(*AuthenticateController).VerifyOTP-fm (5 handlers)
+[GIN-debug] GET    /authenticate/auth-ra     --> github.com/esign-go/internal/controller.(*AuthenticateController).AuthRA-fm (5 handlers)
+[GIN-debug] GET    /authenticate/es-ra       --> github.com/esign-go/internal/controller.(*AuthenticateController).EsignRedirect-fm (5 handlers)
+[GIN-debug] POST   /authenticate/postRequestdata --> github.com/esign-go/internal/controller.(*AuthenticateController).BiometricAuth-fm (5 handlers)
+[GIN-debug] POST   /authenticate/esignCancel --> github.com/esign-go/internal/controller.(*AuthenticateController).CancelEsign-fm (5 handlers)
+[GIN-debug] GET    /authenticate/sigError    --> github.com/esign-go/internal/controller.(*AuthenticateController).SignatureError-fm (5 handlers)
+[GIN-debug] POST   /authenticate/check-status --> github.com/esign-go/internal/controller.(*AuthenticateController).CheckStatus-fm (5 handlers)
+[GIN-debug] POST   /authenticate/check-status-api --> github.com/esign-go/internal/controller.(*AuthenticateController).CheckStatusAPI-fm (5 handlers)
+[GIN-debug] GET    /health                   --> main.main.func1 (5 handlers)
+[GIN-debug] GET    /debug/templates          --> main.main.func2 (5 handlers)
+[GIN-debug] GET    /debug/info               --> main.main.func3 (5 handlers)
+[36mINFO[0m[2025-06-09 18:06:27.913] Starting server on :8080                      [36mcaller[0m="main_debug.go:234"
+2025/06/09 18:06:42 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/09 18:06:42 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/09 18:06:42 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/09 18:06:42 Replacement: "otp":"******"
+2025/06/09 18:06:42 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/09 18:06:42 Replacement: "password":"******"
+2025/06/09 18:06:42 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/09 18:06:42 Replacement: "privateKey":"******"
+2025/06/09 18:06:42 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/09 18:06:42 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-09 18:06:42.348] req_start_authAndEkyc                         [36mrequest_id[0m=8b5295b9-eca0-442c-a74d-848649fda74c
+[37mDEBU[0m[2025-06-09 18:06:42.348] Received esign request                        [37mmsg_length[0m=656
+[37mDEBU[0m[2025-06-09 18:06:42.348] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-09 18:06:42.348] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-09 18:06:42.348] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-09T12:36:42Z\" txn=\"TEST-0"
+[37mDEBU[0m[2025-06-09 18:06:42.351] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-001
+[37mDEBU[0m[2025-06-09 18:06:42.357] Validating request timestamp                  [37mallowed_range[0m="[-30, 30] minutes" [37mcurrent_time[0m="2025-06-09T18:06:42+05:30" [37mdiff_seconds[0m=0.357615 [37mparsed_time[0m="2025-06-09T12:36:42Z" [37mrequest_timestamp[0m="2025-06-09T12:36:42Z" [37mtimeout_minutes[0m=30
+[37mDEBU[0m[2025-06-09 18:06:42.357] Creating error response                       [37mext_code[0m=ESP-009 [37mint_code[0m=ESP-009 [37mmessage[0m="Invalid eKYC token"
+[36mINFO[0m[2025-06-09 18:06:42.364] req_end_authAndEkyc                           [36mrequest_id[0m=8b5295b9-eca0-442c-a74d-848649fda74c
+[36mINFO[0m[2025-06-09 18:06:42.364] HTTP 2xx: {"client_ip":"::1","latency":"16.188334ms","latency_ms":16,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMDlUMTI6MzY6NDJaIiB0eG49IlRFU1QtMDAxIiAKICAgICAgIGVreWNJZFR5cGU9IkEiIGVreWNJZD0iOTk5OTk5OTkwMDE5IiBhc3BJZD0iVEVTVDAwMSIgCiAgICAgICBBdXRoTW9kZT0iMSIgcmVzcG9uc2VTaWdUeXBlPSJwa2NzNyIgCiAgICAgICBwcmVWZXJpZmllZD0ibiIgb3JnYW5pemF0aW9uRmxhZz0ibiIgCiAgICAgICByZXNwb25zZVVybD0iaHR0cDovL2xvY2FsaG9zdDo4MDgwL2NhbGxiYWNrIj4KICAgIDxEb2NzPgogICAgICAgIDxJbnB1dEhhc2ggaWQ9IjEiIGhhc2hBbGdvcml0aG09IlNIQTI1NiIgZG9jSW5mbz0iVGVzdCBEb2N1bWVudCI%2BYTVmM2M2ZDdlOGI5YTBjMWQyZTNmNGE1YjZjN2Q4ZTlmMGExYjJjM2Q0ZTVmNmE3YjhjOWQwZTFmMmEzYjRjNTwvSW5wdXRIYXNoPgogICAgPC9Eb2NzPgo8L0VzaWduPgo%3D","request_id":"9142384f-d8cf-47ef-81af-0b085e5ac336","status":200,"user_agent":"curl/8.7.1"}  [36mcaller[0m="logger.go:103"
+2025/06/09 18:07:28 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/09 18:07:28 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/09 18:07:28 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/09 18:07:28 Replacement: "otp":"******"
+2025/06/09 18:07:28 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/09 18:07:28 Replacement: "password":"******"
+2025/06/09 18:07:28 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/09 18:07:28 Replacement: "privateKey":"******"
+2025/06/09 18:07:28 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/09 18:07:28 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-09 18:07:28.476] req_start_authAndEkyc                         [36mrequest_id[0m=ba7b4fd5-0dea-49b8-856c-e9b4e9a2183a
+[37mDEBU[0m[2025-06-09 18:07:28.476] Received esign request                        [37mmsg_length[0m=608
+[37mDEBU[0m[2025-06-09 18:07:28.476] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-09 18:07:28.476] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-09 18:07:28.476] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-09T12:37:28Z\" txn=\"TEST-0"
+[37mDEBU[0m[2025-06-09 18:07:28.476] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-001
+[37mDEBU[0m[2025-06-09 18:07:28.477] Validating request timestamp                  [37mallowed_range[0m="[-30, 30] minutes" [37mcurrent_time[0m="2025-06-09T18:07:28+05:30" [37mdiff_seconds[0m=0.47755 [37mparsed_time[0m="2025-06-09T12:37:28Z" [37mrequest_timestamp[0m="2025-06-09T12:37:28Z" [37mtimeout_minutes[0m=30
+
+
+[31m2025/06/09 18:07:28 [Recovery] 2025/06/09 - 18:07:28 panic recovered:
+POST /authenticate/esign-doc HTTP/1.1
+Host: localhost:8080
+Accept: */*
+Content-Length: 624
+Content-Type: application/x-www-form-urlencoded
+User-Agent: curl/8.7.1
+
+
+Key "github.com/gin-contrib/sessions" does not exist
+/Users/atharvaz/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:284 (0x1012f778b)
+	(*Context).MustGet: panic("Key \"" + key + "\" does not exist")
+/Users/atharvaz/go/pkg/mod/github.com/gin-contrib/sessions@v1.0.4/sessions.go:148 (0x1012f76dc)
+	Default: return c.MustGet(DefaultKey).(Session)
+/Users/atharvaz/Documents/ESIGN_FINAL/esign-go/internal/service/session_service.go:71 (0x1013fb18f)
+	(*SessionService).Set: session := sessions.Default(c)
+/Users/atharvaz/Documents/ESIGN_FINAL/esign-go/internal/service/session_service.go:193 (0x1013fbe97)
+	(*SessionService).StoreSessionData: if err := s.Set(c, key, value); err != nil {
+/Users/atharvaz/Documents/ESIGN_FINAL/esign-go/internal/controller/authenticate_controller.go:257 (0x101404373)
+	(*AuthenticateController).EsignDoc: if err := ac.sessionService.StoreSessionData(c, sessionData); err != nil {
+/Users/atharvaz/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0x1014024fb)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/atharvaz/Documents/ESIGN_FINAL/esign-go/internal/middleware/rate_limiter.go:78 (0x1014021e4)
+	(*RateLimiterService).Middleware.func1: c.Next()
+/Users/atharvaz/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0x1012e21cf)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/atharvaz/Documents/ESIGN_FINAL/esign-go/internal/middleware/cors.go:47 (0x10140d9b7)
+	main.CORS.func13: c.Next()
+/Users/atharvaz/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0x1012e21cf)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/atharvaz/Documents/ESIGN_FINAL/esign-go/internal/middleware/request_id.go:25 (0x10140e797)
+	main.RequestID.func12: c.Next()
+/Users/atharvaz/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0x1012e21cf)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/atharvaz/Documents/ESIGN_FINAL/esign-go/internal/middleware/logger.go:48 (0x10140df2b)
+	main.Logger.func11: c.Next()
+/Users/atharvaz/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0x1012eea7b)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/atharvaz/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/recovery.go:102 (0x1012eea5c)
+	CustomRecoveryWithWriter.func1: c.Next()
+/Users/atharvaz/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0x1012ed943)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/atharvaz/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/gin.go:644 (0x1012ed4cc)
+	(*Engine).handleHTTPRequest: c.Next()
+/Users/atharvaz/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/gin.go:600 (0x1012ed0f3)
+	(*Engine).ServeHTTP: engine.handleHTTPRequest(c)
+/usr/local/go/src/net/http/server.go:3210 (0x1010303db)
+	serverHandler.ServeHTTP: handler.ServeHTTP(rw, req)
+/usr/local/go/src/net/http/server.go:2092 (0x10101175b)
+	(*conn).serve: serverHandler{c.server}.ServeHTTP(w, w.req)
+/usr/local/go/src/runtime/asm_arm64.s:1223 (0x100db3263)
+	goexit: MOVD	R0, R0	// NOP
+[0m
+[36mINFO[0m[2025-06-09 18:08:23.086] Shutting down server...                       [36mcaller[0m="main_debug.go:245"
+[36mINFO[0m[2025-06-09 18:08:23.086] Server exited                                 [36mcaller[0m="main_debug.go:255"

@@ -9,15 +9,19 @@ import (
 
 // Config holds all configuration for our application
 type Config struct {
-	App      AppConfig
-	Server   ServerConfig
-	Database DatabaseConfig
-	Security SecurityConfig
-	UIDAI    UIDAIConfig
-	Templates TemplateConfig
-	RateLimit RateLimitConfig
-	CORS     CORSConfig
-	Logging  LoggingConfig
+	App         AppConfig
+	Server      ServerConfig
+	Database    DatabaseConfig
+	Security    SecurityConfig
+	UIDAI       UIDAIConfig
+	Templates   TemplateConfig
+	RateLimit   RateLimitConfig
+	CORS        CORSConfig
+	Logging     LoggingConfig
+	Debug       DebugConfig
+	Biometric   BiometricConfig
+	Auth        AuthConfig
+	CheckStatus CheckStatusConfig
 }
 
 type AppConfig struct {
@@ -28,10 +32,13 @@ type AppConfig struct {
 }
 
 type ServerConfig struct {
-	Address      string
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-	IdleTimeout  time.Duration
+	Address        string
+	ReadTimeout    time.Duration
+	WriteTimeout   time.Duration
+	IdleTimeout    time.Duration
+	Version        string
+	Environment    string
+	RequestTimeout int
 }
 
 type DatabaseConfig struct {
@@ -75,16 +82,18 @@ type TemplateConfig struct {
 }
 
 type RateLimitConfig struct {
-	Enabled  bool
-	EsignDoc RateLimitRule
-	OTP      RateLimitRule
-	Default  RateLimitRule
+	Enabled     bool
+	EsignDoc    RateLimitRule
+	OTP         RateLimitRule
+	Default     RateLimitRule
+	CheckStatus RateLimitRule
 }
 
 type RateLimitRule struct {
 	Rate     int
 	Burst    int
 	Duration time.Duration
+	Period   time.Duration
 }
 
 type CORSConfig struct {
@@ -103,6 +112,29 @@ type LoggingConfig struct {
 	ErrorOutputPath string
 	RequestLogging  bool
 	XMLLogging      bool
+}
+
+type DebugConfig struct {
+	LogRequests   bool
+	LogResponses  bool
+	PrettyPrint   bool
+	SkipXMLVerify bool
+}
+
+type BiometricConfig struct {
+	Environment  string
+	ResponseURL  string
+	ConsentText  string
+}
+
+type AuthConfig struct {
+	MaxAttempts      int
+	OTPRetryAttempts int
+	SessionTimeout   int
+}
+
+type CheckStatusConfig struct {
+	AllowedASPs []string
 }
 
 // Load loads configuration from file and environment variables
@@ -149,6 +181,7 @@ func setDefaults() {
 	viper.SetDefault("server.readTimeout", "30s")
 	viper.SetDefault("server.writeTimeout", "30s")
 	viper.SetDefault("server.idleTimeout", "120s")
+	viper.SetDefault("server.requestTimeout", 30) // 30 minutes
 	
 	// Database defaults
 	viper.SetDefault("database.host", "localhost")
@@ -188,6 +221,15 @@ func setDefaults() {
 	viper.SetDefault("logging.errorOutputPath", "stderr")
 	viper.SetDefault("logging.requestLogging", true)
 	viper.SetDefault("logging.xmlLogging", false)
+	
+	// Template defaults
+	viper.SetDefault("templates.path", "./templates")
+	viper.SetDefault("templates.cacheTemplates", true)
+	
+	// Auth defaults
+	viper.SetDefault("auth.maxAttempts", 3)
+	viper.SetDefault("auth.otpRetryAttempts", 3)
+	viper.SetDefault("auth.sessionTimeout", 30)
 }
 
 func validate(cfg *Config) error {

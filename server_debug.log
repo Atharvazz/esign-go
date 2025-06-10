@@ -1,0 +1,139 @@
+2025/06/09 17:49:07 Working Directory: /Users/atharvaz/Documents/ESIGN_FINAL/esign-go
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (5 handlers)
+[GIN-debug] HEAD   /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (5 handlers)
+2025/06/09 17:49:07 Loading templates from: /Users/atharvaz/Documents/ESIGN_FINAL/esign-go/templates/*
+2025/06/09 17:49:07 Found 17 template files:
+2025/06/09 17:49:07   - auth.html
+2025/06/09 17:49:07   - authExpired.html
+2025/06/09 17:49:07   - authFail.html
+2025/06/09 17:49:07   - auth_biometric.html
+2025/06/09 17:49:07   - auth_biometric_iris.html
+2025/06/09 17:49:07   - auth_okyc.html
+2025/06/09 17:49:07   - error.html
+2025/06/09 17:49:07   - esign-cancel.html
+2025/06/09 17:49:07   - esign-cancelled.html
+2025/06/09 17:49:07   - esign-failed.html
+2025/06/09 17:49:07   - esign-success.html
+2025/06/09 17:49:07   - esignFailed.html
+2025/06/09 17:49:07   - otp_auth.html
+2025/06/09 17:49:07   - otp_input.html
+2025/06/09 17:49:07   - rd.html
+2025/06/09 17:49:07   - sigError.html
+2025/06/09 17:49:07   - success.html
+[GIN-debug] Loaded HTML Templates (18): 
+	- rd.html
+	- authFail.html
+	- sigError.html
+	- esignFailed.html
+	- auth.html
+	- authExpired.html
+	- auth_biometric_iris.html
+	- error.html
+	- esign-cancel.html
+	- otp_input.html
+	- 
+	- auth_okyc.html
+	- esign-cancelled.html
+	- esign-failed.html
+	- esign-success.html
+	- otp_auth.html
+	- success.html
+	- auth_biometric.html
+
+[GIN-debug] POST   /authenticate/esign-doc   --> github.com/esign-go/internal/controller.(*AuthenticateController).EsignDoc-fm (6 handlers)
+[GIN-debug] POST   /authenticate/es          --> github.com/esign-go/internal/controller.(*AuthenticateController).ProcessEsign-fm (5 handlers)
+[GIN-debug] POST   /authenticate/otp         --> github.com/esign-go/internal/controller.(*AuthenticateController).GenerateOTP-fm (5 handlers)
+[GIN-debug] POST   /authenticate/otpAction   --> github.com/esign-go/internal/controller.(*AuthenticateController).VerifyOTP-fm (5 handlers)
+[GIN-debug] GET    /authenticate/auth-ra     --> github.com/esign-go/internal/controller.(*AuthenticateController).AuthRA-fm (5 handlers)
+[GIN-debug] GET    /authenticate/es-ra       --> github.com/esign-go/internal/controller.(*AuthenticateController).EsignRedirect-fm (5 handlers)
+[GIN-debug] POST   /authenticate/postRequestdata --> github.com/esign-go/internal/controller.(*AuthenticateController).BiometricAuth-fm (5 handlers)
+[GIN-debug] POST   /authenticate/esignCancel --> github.com/esign-go/internal/controller.(*AuthenticateController).CancelEsign-fm (5 handlers)
+[GIN-debug] GET    /authenticate/sigError    --> github.com/esign-go/internal/controller.(*AuthenticateController).SignatureError-fm (5 handlers)
+[GIN-debug] POST   /authenticate/check-status --> github.com/esign-go/internal/controller.(*AuthenticateController).CheckStatus-fm (5 handlers)
+[GIN-debug] POST   /authenticate/check-status-api --> github.com/esign-go/internal/controller.(*AuthenticateController).CheckStatusAPI-fm (5 handlers)
+[GIN-debug] GET    /health                   --> main.main.func1 (5 handlers)
+[GIN-debug] GET    /debug/templates          --> main.main.func2 (5 handlers)
+[GIN-debug] GET    /debug/info               --> main.main.func3 (5 handlers)
+[36mINFO[0m[2025-06-09 17:49:07.958] Starting server on :8080                      [36mcaller[0m="main_debug.go:234"
+2025/06/09 17:51:18 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/09 17:51:18 Replacement: "password":"******"
+2025/06/09 17:51:18 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/09 17:51:18 Replacement: "privateKey":"******"
+2025/06/09 17:51:18 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/09 17:51:18 Replacement: "biometricData":"******"
+2025/06/09 17:51:18 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/09 17:51:18 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/09 17:51:18 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/09 17:51:18 Replacement: "otp":"******"
+[36mINFO[0m[2025-06-09 17:51:18.109] req_start_authAndEkyc                         [36mrequest_id[0m=00346126-0f8f-488f-9719-447219bd94e7
+[37mDEBU[0m[2025-06-09 17:51:18.109] Received esign request                        [37mmsg_length[0m=652
+[37mDEBU[0m[2025-06-09 17:51:18.109] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-09 17:51:18.109] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-09 17:51:18.109] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-09T15:00:00\" txn=\"TEST-00"
+[37mDEBU[0m[2025-06-09 17:51:18.110] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-001
+[37mDEBU[0m[2025-06-09 17:51:18.119] Creating error response                       [37mext_code[0m=ESP-005 [37mint_code[0m=ESP-005 [37mmessage[0m="Request timestamp invalid"
+[36mINFO[0m[2025-06-09 17:51:18.125] req_end_authAndEkyc                           [36mrequest_id[0m=00346126-0f8f-488f-9719-447219bd94e7
+[36mINFO[0m[2025-06-09 17:51:18.125] HTTP 2xx: {"client_ip":"::1","latency":"16.197958ms","latency_ms":16,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMDlUMTU6MDA6MDAiIHR4bj0iVEVTVC0wMDEiIAogICAgICAgZWt5Y0lkVHlwZT0iQSIgZWt5Y0lkPSI5OTk5OTk5OTAwMTkiIGFzcElkPSJURVNUMDAxIiAKICAgICAgIEF1dGhNb2RlPSIxIiByZXNwb25zZVNpZ1R5cGU9InBrY3M3IiAKICAgICAgIHByZVZlcmlmaWVkPSJuIiBvcmdhbml6YXRpb25GbGFnPSJuIiAKICAgICAgIHJlc3BvbnNlVXJsPSJodHRwOi8vbG9jYWxob3N0OjgwODAvY2FsbGJhY2siPgogICAgPERvY3M%2BCiAgICAgICAgPElucHV0SGFzaCBpZD0iMSIgaGFzaEFsZ29yaXRobT0iU0hBMjU2IiBkb2NJbmZvPSJUZXN0IERvY3VtZW50Ij5hNWYzYzZkN2U4YjlhMGMxZDJlM2Y0YTViNmM3ZDhlOWYwYTFiMmMzZDRlNWY2YTdiOGM5ZDBlMWYyYTNiNGM1PC9JbnB1dEhhc2g%2BCiAgICA8L0RvY3M%2BCjwvRXNpZ24%2B","request_id":"ff40091f-197b-4913-bdb0-5c21159327b9","status":200,"user_agent":"curl/8.7.1"}  [36mcaller[0m="logger.go:103"
+2025/06/09 17:51:58 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/09 17:51:58 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/09 17:51:58 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/09 17:51:58 Replacement: "otp":"******"
+2025/06/09 17:51:58 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/09 17:51:58 Replacement: "password":"******"
+2025/06/09 17:51:58 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/09 17:51:58 Replacement: "privateKey":"******"
+2025/06/09 17:51:58 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/09 17:51:58 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-09 17:51:58.428] req_start_authAndEkyc                         [36mrequest_id[0m=c3657005-7f40-4d7f-a07f-84ac76ea1d97
+[37mDEBU[0m[2025-06-09 17:51:58.428] Received esign request                        [37mmsg_length[0m=656
+[37mDEBU[0m[2025-06-09 17:51:58.428] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-09 17:51:58.428] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-09 17:51:58.428] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-09T12:21:58\" txn=\"TEST-00"
+[37mDEBU[0m[2025-06-09 17:51:58.428] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-001
+[37mDEBU[0m[2025-06-09 17:51:58.429] Creating error response                       [37mext_code[0m=ESP-005 [37mint_code[0m=ESP-005 [37mmessage[0m="Request timestamp invalid"
+[36mINFO[0m[2025-06-09 17:51:58.435] req_end_authAndEkyc                           [36mrequest_id[0m=c3657005-7f40-4d7f-a07f-84ac76ea1d97
+[36mINFO[0m[2025-06-09 17:51:58.435] HTTP 2xx: {"client_ip":"::1","latency":"7.65525ms","latency_ms":7,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMDlUMTI6MjE6NTgiIHR4bj0iVEVTVC0wMDEiIAogICAgICAgZWt5Y0lkVHlwZT0iQSIgZWt5Y0lkPSI5OTk5OTk5OTAwMTkiIGFzcElkPSJURVNUMDAxIiAKICAgICAgIEF1dGhNb2RlPSIxIiByZXNwb25zZVNpZ1R5cGU9InBrY3M3IiAKICAgICAgIHByZVZlcmlmaWVkPSJuIiBvcmdhbml6YXRpb25GbGFnPSJuIiAKICAgICAgIHJlc3BvbnNlVXJsPSJodHRwOi8vbG9jYWxob3N0OjgwODAvY2FsbGJhY2siPgogICAgPERvY3M%2BCiAgICAgICAgPElucHV0SGFzaCBpZD0iMSIgaGFzaEFsZ29yaXRobT0iU0hBMjU2IiBkb2NJbmZvPSJUZXN0IERvY3VtZW50Ij5hNWYzYzZkN2U4YjlhMGMxZDJlM2Y0YTViNmM3ZDhlOWYwYTFiMmMzZDRlNWY2YTdiOGM5ZDBlMWYyYTNiNGM1PC9JbnB1dEhhc2g%2BCiAgICA8L0RvY3M%2BCjwvRXNpZ24%2BCg%3D%3D","request_id":"3d1091c0-7b9b-4a3a-910e-ff3504ef7909","status":200,"user_agent":"curl/8.7.1"}  [36mcaller[0m="logger.go:103"
+2025/06/09 18:00:07 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/09 18:00:07 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/09 18:00:07 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/09 18:00:07 Replacement: "otp":"******"
+2025/06/09 18:00:07 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/09 18:00:07 Replacement: "password":"******"
+2025/06/09 18:00:07 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/09 18:00:07 Replacement: "privateKey":"******"
+2025/06/09 18:00:07 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/09 18:00:07 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-09 18:00:07.529] req_start_authAndEkyc                         [36mrequest_id[0m=151226d5-a0da-4859-bd57-2a5960b89234
+[37mDEBU[0m[2025-06-09 18:00:07.529] Received esign request                        [37mmsg_length[0m=656
+[37mDEBU[0m[2025-06-09 18:00:07.529] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-09 18:00:07.529] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-09 18:00:07.529] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-09T12:30:07Z\" txn=\"TEST-0"
+[37mDEBU[0m[2025-06-09 18:00:07.529] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-001
+[37mDEBU[0m[2025-06-09 18:00:07.532] Creating error response                       [37mext_code[0m=ESP-005 [37mint_code[0m=ESP-005 [37mmessage[0m="Request timestamp invalid"
+[36mINFO[0m[2025-06-09 18:00:07.537] req_end_authAndEkyc                           [36mrequest_id[0m=151226d5-a0da-4859-bd57-2a5960b89234
+[36mINFO[0m[2025-06-09 18:00:07.538] HTTP 2xx: {"client_ip":"::1","latency":"9.308958ms","latency_ms":9,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMDlUMTI6MzA6MDdaIiB0eG49IlRFU1QtMDAxIiAKICAgICAgIGVreWNJZFR5cGU9IkEiIGVreWNJZD0iOTk5OTk5OTkwMDE5IiBhc3BJZD0iVEVTVDAwMSIgCiAgICAgICBBdXRoTW9kZT0iMSIgcmVzcG9uc2VTaWdUeXBlPSJwa2NzNyIgCiAgICAgICBwcmVWZXJpZmllZD0ibiIgb3JnYW5pemF0aW9uRmxhZz0ibiIgCiAgICAgICByZXNwb25zZVVybD0iaHR0cDovL2xvY2FsaG9zdDo4MDgwL2NhbGxiYWNrIj4KICAgIDxEb2NzPgogICAgICAgIDxJbnB1dEhhc2ggaWQ9IjEiIGhhc2hBbGdvcml0aG09IlNIQTI1NiIgZG9jSW5mbz0iVGVzdCBEb2N1bWVudCI%2BYTVmM2M2ZDdlOGI5YTBjMWQyZTNmNGE1YjZjN2Q4ZTlmMGExYjJjM2Q0ZTVmNmE3YjhjOWQwZTFmMmEzYjRjNTwvSW5wdXRIYXNoPgogICAgPC9Eb2NzPgo8L0VzaWduPgo%3D","request_id":"fe03d85d-f12b-4ba7-b93c-157b37533137","status":200,"user_agent":"curl/8.7.1"}  [36mcaller[0m="logger.go:103"
+2025/06/09 18:03:54 Pattern: "aadhaar"\s*:\s*"(\d{12})"
+2025/06/09 18:03:54 Replacement: "aadhaar":"XXXX-XXXX-$1"
+2025/06/09 18:03:54 Pattern: "otp"\s*:\s*"(\d+)"
+2025/06/09 18:03:54 Replacement: "otp":"******"
+2025/06/09 18:03:54 Pattern: "password"\s*:\s*"([^"]+)"
+2025/06/09 18:03:54 Replacement: "password":"******"
+2025/06/09 18:03:54 Pattern: "privateKey"\s*:\s*"([^"]+)"
+2025/06/09 18:03:54 Replacement: "privateKey":"******"
+2025/06/09 18:03:54 Pattern: "biometricData"\s*:\s*"([^"]+)"
+2025/06/09 18:03:54 Replacement: "biometricData":"******"
+[36mINFO[0m[2025-06-09 18:03:54.388] req_start_authAndEkyc                         [36mrequest_id[0m=ca2e6371-a34e-47b3-8fe1-d7c63c694ff5
+[37mDEBU[0m[2025-06-09 18:03:54.388] Received esign request                        [37mmsg_length[0m=656
+[37mDEBU[0m[2025-06-09 18:03:54.388] Inside PreValidateAndPrepare                 
+[37mDEBU[0m[2025-06-09 18:03:54.388] Decoded base64 XML                           
+[37mDEBU[0m[2025-06-09 18:03:54.388] XML preview                                   [37mxml_preview[0m="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Esign ver=\"2.1\" sc=\"Y\" ts=\"2025-06-09T12:33:54Z\" txn=\"TEST-0"
+[37mDEBU[0m[2025-06-09 18:03:54.388] Processing request                            [37masp_id[0m=TEST001 [37mtxn_id[0m=TEST-001
+[37mDEBU[0m[2025-06-09 18:03:54.390] Creating error response                       [37mext_code[0m=ESP-005 [37mint_code[0m=ESP-005 [37mmessage[0m="Request timestamp invalid"
+[36mINFO[0m[2025-06-09 18:03:54.394] req_end_authAndEkyc                           [36mrequest_id[0m=ca2e6371-a34e-47b3-8fe1-d7c63c694ff5
+[36mINFO[0m[2025-06-09 18:03:54.394] HTTP 2xx: {"client_ip":"::1","latency":"6.938542ms","latency_ms":6,"method":"POST","path":"/authenticate/esign-doc","request_body":"msg=PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPEVzaWduIHZlcj0iMi4xIiBzYz0iWSIgdHM9IjIwMjUtMDYtMDlUMTI6MzM6NTRaIiB0eG49IlRFU1QtMDAxIiAKICAgICAgIGVreWNJZFR5cGU9IkEiIGVreWNJZD0iOTk5OTk5OTkwMDE5IiBhc3BJZD0iVEVTVDAwMSIgCiAgICAgICBBdXRoTW9kZT0iMSIgcmVzcG9uc2VTaWdUeXBlPSJwa2NzNyIgCiAgICAgICBwcmVWZXJpZmllZD0ibiIgb3JnYW5pemF0aW9uRmxhZz0ibiIgCiAgICAgICByZXNwb25zZVVybD0iaHR0cDovL2xvY2FsaG9zdDo4MDgwL2NhbGxiYWNrIj4KICAgIDxEb2NzPgogICAgICAgIDxJbnB1dEhhc2ggaWQ9IjEiIGhhc2hBbGdvcml0aG09IlNIQTI1NiIgZG9jSW5mbz0iVGVzdCBEb2N1bWVudCI%2BYTVmM2M2ZDdlOGI5YTBjMWQyZTNmNGE1YjZjN2Q4ZTlmMGExYjJjM2Q0ZTVmNmE3YjhjOWQwZTFmMmEzYjRjNTwvSW5wdXRIYXNoPgogICAgPC9Eb2NzPgo8L0VzaWduPgo%3D","request_id":"707a4743-3c1d-47fd-9dd2-e01d2f91d653","status":200,"user_agent":"curl/8.7.1"}  [36mcaller[0m="logger.go:103"
+[36mINFO[0m[2025-06-09 18:05:38.790] Shutting down server...                       [36mcaller[0m="main_debug.go:245"
+[36mINFO[0m[2025-06-09 18:05:38.791] Server exited                                 [36mcaller[0m="main_debug.go:255"

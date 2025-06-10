@@ -1,0 +1,593 @@
+{
+  "info": {
+    "name": "eSign API Collection",
+    "description": "Complete collection of eSign API endpoints with all authentication flows",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "aspId",
+      "value": "TEST001",
+      "type": "string"
+    },
+    {
+      "key": "aadhaar",
+      "value": "999999990019",
+      "type": "string"
+    },
+    {
+      "key": "txnId",
+      "value": "TEST-{{$timestamp}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Check if the server is running and healthy"
+      }
+    },
+    {
+      "name": "OTP Flow",
+      "item": [
+        {
+          "name": "1. Initiate eSign (OTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "eSignRequest",
+                  "value": "{{otpRequestXml}}",
+                  "description": "Base64 encoded eSign XML request"
+                },
+                {
+                  "key": "aspTxnId",
+                  "value": "ASP-{{$timestamp}}",
+                  "description": "ASP Transaction ID"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/esign-doc",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "esign-doc"]
+            },
+            "description": "Initiate eSign request with OTP authentication mode"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate eSign XML for OTP flow",
+                  "const timestamp = new Date().toISOString();",
+                  "const txnId = `TEST-${Date.now()}`;",
+                  "pm.globals.set('currentTxnId', txnId);",
+                  "",
+                  "const xml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+                  "<Esign ver=\"2.1\" sc=\"Y\" ts=\"${timestamp}\" txn=\"${txnId}\"",
+                  "       ekycIdType=\"A\" ekycId=\"999999990019\" aspId=\"TEST001\"",
+                  "       AuthMode=\"1\" responseSigType=\"pkcs7\" preVerified=\"n\"",
+                  "       organizationFlag=\"n\" responseUrl=\"http://localhost:8080/callback\">",
+                  "    <Docs>",
+                  "        <InputHash id=\"1\" hashAlgorithm=\"SHA256\" docInfo=\"Test Agreement\">",
+                  "            a5f3c6d7e8b9a0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5",
+                  "        </InputHash>",
+                  "    </Docs>",
+                  "</Esign>`;",
+                  "",
+                  "const base64Xml = btoa(xml);",
+                  "pm.environment.set('otpRequestXml', base64Xml);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Generate OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "aadhaar",
+                  "value": "{{aadhaar}}"
+                },
+                {
+                  "key": "requestId",
+                  "value": "1"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "otp"]
+            },
+            "description": "Generate OTP for Aadhaar authentication"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Save OTP transaction ID if available",
+                  "const response = pm.response.json();",
+                  "if (response.txnId) {",
+                  "    pm.globals.set('otpTxnId', response.txnId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "otp",
+                  "value": "123456",
+                  "description": "6-digit OTP"
+                },
+                {
+                  "key": "txnId",
+                  "value": "{{otpTxnId}}",
+                  "description": "OTP Transaction ID from previous step"
+                },
+                {
+                  "key": "aadhaar",
+                  "value": "{{aadhaar}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/otpAction",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "otpAction"]
+            },
+            "description": "Verify OTP and complete authentication"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Biometric Flow",
+      "item": [
+        {
+          "name": "1. Initiate eSign (Biometric)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "eSignRequest",
+                  "value": "{{bioRequestXml}}"
+                },
+                {
+                  "key": "aspTxnId",
+                  "value": "ASP-BIO-{{$timestamp}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/esign-doc",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "esign-doc"]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate eSign XML for Biometric flow",
+                  "const timestamp = new Date().toISOString();",
+                  "const txnId = `BIO-${Date.now()}`;",
+                  "",
+                  "const xml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+                  "<Esign ver=\"2.1\" sc=\"Y\" ts=\"${timestamp}\" txn=\"${txnId}\"",
+                  "       ekycIdType=\"A\" ekycId=\"999999990019\" aspId=\"TEST001\"",
+                  "       AuthMode=\"2\" responseSigType=\"pkcs7\" preVerified=\"n\"",
+                  "       organizationFlag=\"n\" responseUrl=\"http://localhost:8080/callback\">",
+                  "    <Docs>",
+                  "        <InputHash id=\"1\" hashAlgorithm=\"SHA256\" docInfo=\"Loan Agreement\">",
+                  "            b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7",
+                  "        </InputHash>",
+                  "    </Docs>",
+                  "</Esign>`;",
+                  "",
+                  "const base64Xml = btoa(xml);",
+                  "pm.environment.set('bioRequestXml', base64Xml);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Submit Biometric Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "PidData",
+                  "value": "{{pidDataBase64}}",
+                  "description": "Base64 encoded PID data from biometric device"
+                },
+                {
+                  "key": "requestId",
+                  "value": "1"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/postRequestdata",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "postRequestdata"]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Sample PID data for testing",
+                  "const pidData = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+                  "<PidData>",
+                  "    <Resp errCode=\"0\" errInfo=\"Success\" fCount=\"1\" fType=\"2\" nmPoints=\"30\" qScore=\"70\"/>",
+                  "    <DeviceInfo dpId=\"MANTRA.MSIPL\" rdsId=\"MANTRA.WIN.001\" rdsVer=\"1.0.4\" mi=\"MFS100\"/>",
+                  "    <Skey ci=\"20250605\">ENCRYPTED_SESSION_KEY</Skey>",
+                  "    <Hmac>HMAC_VALUE</Hmac>",
+                  "    <Data type=\"X\">ENCRYPTED_PID_DATA</Data>",
+                  "</PidData>`;",
+                  "",
+                  "const base64PidData = btoa(pidData);",
+                  "pm.environment.set('pidDataBase64', base64PidData);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Status Check",
+      "item": [
+        {
+          "name": "Check Status (XML)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "statusRequest",
+                  "value": "{{statusRequestXml}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/check-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "check-status"]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate status check XML",
+                  "const timestamp = new Date().toISOString();",
+                  "const txnId = pm.globals.get('currentTxnId') || 'TEST-123';",
+                  "",
+                  "const xml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+                  "<EsignStatus ver=\"2.1\" ts=\"${timestamp}\" txn=\"STATUS-${Date.now()}\"",
+                  "             aspId=\"TEST001\" respAttemptNo=\"1\">",
+                  "    <TxnList>",
+                  "        <Txn>${txnId}</Txn>",
+                  "    </TxnList>",
+                  "</EsignStatus>`;",
+                  "",
+                  "const base64Xml = btoa(xml);",
+                  "pm.environment.set('statusRequestXml', base64Xml);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check Status (JSON API)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"aspId\": \"{{aspId}}\",\n    \"transactions\": [\"{{currentTxnId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/check-status-api",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "check-status-api"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Other Operations",
+      "item": [
+        {
+          "name": "Cancel eSign",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "requestId",
+                  "value": "1"
+                },
+                {
+                  "key": "reason",
+                  "value": "User cancelled the request"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/esignCancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "esignCancel"]
+            }
+          }
+        },
+        {
+          "name": "Direct eSign (Pre-authenticated)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "eSignRequest",
+                  "value": "{{preAuthRequestXml}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/es",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "es"]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-authenticated request",
+                  "const timestamp = new Date().toISOString();",
+                  "const xml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+                  "<Esign ver=\"2.1\" sc=\"Y\" ts=\"${timestamp}\" txn=\"PRE-AUTH-${Date.now()}\"",
+                  "       ekycIdType=\"A\" ekycId=\"999999990019\" aspId=\"TEST001\"",
+                  "       AuthMode=\"1\" responseSigType=\"pkcs7\" preVerified=\"y\"",
+                  "       organizationFlag=\"n\" responseUrl=\"http://localhost:8080/callback\">",
+                  "    <Docs>",
+                  "        <InputHash id=\"1\" hashAlgorithm=\"SHA256\" docInfo=\"Pre-auth Document\">",
+                  "            d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9",
+                  "        </InputHash>",
+                  "    </Docs>",
+                  "    <Signature>PRE_AUTH_SIGNATURE</Signature>",
+                  "</Esign>`;",
+                  "",
+                  "const base64Xml = btoa(xml);",
+                  "pm.environment.set('preAuthRequestXml', base64Xml);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Face Recognition",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"1\",\n    \"faceImage\": \"BASE64_ENCODED_FACE_IMAGE\",\n    \"aadhaarNumber\": \"{{aadhaar}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/fcr",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "fcr"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Scenarios",
+      "item": [
+        {
+          "name": "Invalid ASP ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "eSignRequest",
+                  "value": "{{invalidAspXml}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/esign-doc",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "esign-doc"]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = new Date().toISOString();",
+                  "const xml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+                  "<Esign ver=\"2.1\" sc=\"Y\" ts=\"${timestamp}\" txn=\"ERROR-${Date.now()}\"",
+                  "       aspId=\"INVALID_ASP\" AuthMode=\"1\">",
+                  "    <Docs>",
+                  "        <InputHash id=\"1\" hashAlgorithm=\"SHA256\">test</InputHash>",
+                  "    </Docs>",
+                  "</Esign>`;",
+                  "",
+                  "const base64Xml = btoa(xml);",
+                  "pm.environment.set('invalidAspXml', base64Xml);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Expired Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "eSignRequest",
+                  "value": "{{expiredRequestXml}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authenticate/esign-doc",
+              "host": ["{{baseUrl}}"],
+              "path": ["authenticate", "esign-doc"]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const xml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+                  "<Esign ver=\"2.1\" sc=\"Y\" ts=\"2020-01-01T12:00:00\" txn=\"EXPIRED-${Date.now()}\"",
+                  "       aspId=\"TEST001\" AuthMode=\"1\">",
+                  "    <Docs>",
+                  "        <InputHash id=\"1\" hashAlgorithm=\"SHA256\">test</InputHash>",
+                  "    </Docs>",
+                  "</Esign>`;",
+                  "",
+                  "const base64Xml = btoa(xml);",
+                  "pm.environment.set('expiredRequestXml', base64Xml);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

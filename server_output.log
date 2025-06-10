@@ -1,0 +1,3 @@
+2025/06/09 16:31:23 Working Directory: /Users/atharvaz/Documents/ESIGN_FINAL/esign-go
+2025/06/09 16:31:23 Failed to run migrations: migration failed: pq: must be owner of table transactions
+exit status 1

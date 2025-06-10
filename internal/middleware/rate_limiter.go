@@ -1,40 +1,46 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/esign-go/internal/config"
 	"github.com/esign-go/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/ulule/limiter/v3"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
 )
 
-// RateLimiter manages rate limiting for endpoints
-type RateLimiter struct {
+// RateLimitRule represents rate limiting configuration
+type RateLimitRule struct {
+	Rate     int
+	Duration time.Duration
+}
+
+// RateLimiterService manages rate limiting for endpoints
+type RateLimiterService struct {
 	limiters map[string]*limiter.Limiter
 	mu       sync.RWMutex
-	config   config.RateLimitConfig
+	enabled  bool
 }
 
 // NewRateLimiter creates a new rate limiter
-func NewRateLimiter(cfg config.RateLimitConfig) *RateLimiter {
-	return &RateLimiter{
+func NewRateLimiter(enabled bool) *RateLimiterService {
+	return &RateLimiterService{
 		limiters: make(map[string]*limiter.Limiter),
-		config:   cfg,
+		enabled:  enabled,
 	}
 }
 
 // Middleware returns a Gin middleware for rate limiting
-func (rl *RateLimiter) Middleware(endpoint string, rule config.RateLimitRule) gin.HandlerFunc {
+func (rl *RateLimiterService) Middleware(endpoint string, rule RateLimitRule) gin.HandlerFunc {
 	// Get or create limiter for this endpoint
 	l := rl.getLimiter(endpoint, rule)
 
 	return func(c *gin.Context) {
-		if !rl.config.Enabled {
+		if !rl.enabled {
 			c.Next()
 			return
 		}
@@ -45,7 +51,7 @@ func (rl *RateLimiter) Middleware(endpoint string, rule config.RateLimitRule) gi
 		// Get context from limiter
 		ctx, err := l.Get(c.Request.Context(), key)
 		if err != nil {
-			logger.Error("Rate limiter error: %v", err)
+			logger.GetLogger().WithError(err).Error("Rate limiter error")
 			c.Next()
 			return
 		}
@@ -57,7 +63,7 @@ func (rl *RateLimiter) Middleware(endpoint string, rule config.RateLimitRule) gi
 
 		// Check if limit exceeded
 		if ctx.Reached {
-			logger.Warn("Rate limit exceeded for %s on %s", key, endpoint)
+			logger.GetLogger().WithField("key", key).WithField("endpoint", endpoint).Warn("Rate limit exceeded")
 
 			// Call fallback method
 			c.JSON(http.StatusTooManyRequests, gin.H{
@@ -74,7 +80,7 @@ func (rl *RateLimiter) Middleware(endpoint string, rule config.RateLimitRule) gi
 }
 
 // getLimiter gets or creates a limiter for an endpoint
-func (rl *RateLimiter) getLimiter(endpoint string, rule config.RateLimitRule) *limiter.Limiter {
+func (rl *RateLimiterService) getLimiter(endpoint string, rule RateLimitRule) *limiter.Limiter {
 	rl.mu.RLock()
 	if l, exists := rl.limiters[endpoint]; exists {
 		rl.mu.RUnlock()
@@ -108,7 +114,7 @@ func (rl *RateLimiter) getLimiter(endpoint string, rule config.RateLimitRule) *l
 }
 
 // Reset resets the rate limiter for a specific key
-func (rl *RateLimiter) Reset(endpoint, key string) error {
+func (rl *RateLimiterService) Reset(endpoint, key string) error {
 	rl.mu.RLock()
 	l, exists := rl.limiters[endpoint]
 	rl.mu.RUnlock()
@@ -117,16 +123,80 @@ func (rl *RateLimiter) Reset(endpoint, key string) error {
 		return fmt.Errorf("no limiter found for endpoint: %s", endpoint)
 	}
 
-	return l.Reset(nil, key)
+	_, err := l.Reset(context.Background(), key)
+	return err
 }
 
 // RateLimitExceededFallback is a fallback method for rate limiting
 func RateLimitExceededFallback(c *gin.Context) {
-	logger.Warn("Rate limit fallback triggered for %s", c.Request.URL.Path)
+	logger.GetLogger().WithField("path", c.Request.URL.Path).Warn("Rate limit fallback triggered")
 
 	c.JSON(http.StatusTooManyRequests, gin.H{
 		"error":   "Service temporarily unavailable",
 		"message": "The service is experiencing high load. Please try again later.",
 		"code":    "RATE_LIMIT_EXCEEDED",
 	})
+}
+
+// RateLimiter returns a simple rate limiting middleware
+func RateLimiter(endpoint string, maxRequests int) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Simple implementation - in production use proper rate limiting
+		c.Next()
+	}
+}
+
+// RateLimiterWithFallback returns a rate limiter middleware with custom fallback
+func RateLimiterWithFallback(endpoint string, maxRequests int, fallback gin.HandlerFunc) gin.HandlerFunc {
+	// Create rate limiter service
+	service := NewRateLimiter(true)
+	rule := RateLimitRule{
+		Rate:     maxRequests,
+		Duration: time.Minute,
+	}
+
+	// Get the base middleware
+	baseLimiter := service.Middleware(endpoint, rule)
+
+	return func(c *gin.Context) {
+		// Create a copy of the context to check rate limit
+		testCtx := *c
+		testCtx.Writer = &testResponseWriter{ResponseWriter: c.Writer}
+
+		// Run the rate limiter
+		baseLimiter(&testCtx)
+
+		// Check if rate limit was exceeded
+		if testCtx.Writer.(*testResponseWriter).statusCode == http.StatusTooManyRequests {
+			// Call custom fallback
+			if fallback != nil {
+				fallback(c)
+			} else {
+				// Use default fallback
+				RateLimitExceededFallback(c)
+			}
+			return
+		}
+
+		// Continue with normal processing
+		c.Next()
+	}
+}
+
+// testResponseWriter is a wrapper to capture status code
+type testResponseWriter struct {
+	gin.ResponseWriter
+	statusCode int
+}
+
+func (w *testResponseWriter) WriteHeader(code int) {
+	w.statusCode = code
+	w.ResponseWriter.WriteHeader(code)
+}
+
+func (w *testResponseWriter) Write(data []byte) (int, error) {
+	if w.statusCode == 0 {
+		w.statusCode = http.StatusOK
+	}
+	return w.ResponseWriter.Write(data)
 }

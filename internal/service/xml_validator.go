@@ -8,7 +8,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"encoding/xml"
 	"fmt"
 	"strings"
 
@@ -101,8 +100,8 @@ func (v *XMLValidator) ValidateASPSignature(xmlData []byte, signature []byte, pu
 // validateChildElements validates the child elements of the root
 func (v *XMLValidator) validateChildElements(root *etree.Element) error {
 	// Check for required child elements
-	requiredElements := []string{"Docs", "InputHash"}
-	
+	requiredElements := []string{"Docs"}
+
 	for _, elemName := range requiredElements {
 		elem := root.SelectElement(elemName)
 		if elem == nil {
@@ -261,21 +260,21 @@ type XMLSignatureValidator struct {
 // NewXMLSignatureValidator creates a new XML signature validator
 func NewXMLSignatureValidator(trustedCertsPEM [][]byte) (*XMLSignatureValidator, error) {
 	var certs []*x509.Certificate
-	
+
 	for _, certPEM := range trustedCertsPEM {
 		block, _ := pem.Decode(certPEM)
 		if block == nil {
 			continue
 		}
-		
+
 		cert, err := x509.ParseCertificate(block.Bytes)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse certificate: %w", err)
 		}
-		
+
 		certs = append(certs, cert)
 	}
-	
+
 	return &XMLSignatureValidator{
 		trustedCerts: certs,
 	}, nil
@@ -288,60 +287,60 @@ func (v *XMLSignatureValidator) Validate(xmlData []byte) error {
 	if err := doc.ReadFromBytes(xmlData); err != nil {
 		return fmt.Errorf("failed to parse XML: %w", err)
 	}
-	
+
 	// Find Signature element
 	sig := doc.FindElement("//Signature")
 	if sig == nil {
 		return fmt.Errorf("no Signature element found")
 	}
-	
+
 	// Extract signature value
 	sigValueElem := sig.FindElement("SignatureValue")
 	if sigValueElem == nil {
 		return fmt.Errorf("no SignatureValue element found")
 	}
-	
+
 	sigValue, err := base64.StdEncoding.DecodeString(strings.TrimSpace(sigValueElem.Text()))
 	if err != nil {
 		return fmt.Errorf("failed to decode signature value: %w", err)
 	}
-	
+
 	// Get signed info and canonicalize
 	signedInfo := sig.FindElement("SignedInfo")
 	if signedInfo == nil {
 		return fmt.Errorf("no SignedInfo element found")
 	}
-	
+
 	// Canonicalize SignedInfo (simplified - use proper C14N in production)
 	var buf bytes.Buffer
-	signedInfo.WriteTo(&buf)
+	signedInfo.WriteTo(&buf, &etree.WriteSettings{})
 	canonicalSignedInfo := buf.Bytes()
-	
+
 	// Calculate digest
 	hash := sha256.Sum256(canonicalSignedInfo)
-	
+
 	// Find certificate in KeyInfo
 	cert, err := v.extractCertificate(sig)
 	if err != nil {
 		return fmt.Errorf("failed to extract certificate: %w", err)
 	}
-	
+
 	// Verify certificate is trusted
 	if err := v.verifyCertificate(cert); err != nil {
 		return fmt.Errorf("certificate verification failed: %w", err)
 	}
-	
+
 	// Verify signature
 	rsaPub, ok := cert.PublicKey.(*rsa.PublicKey)
 	if !ok {
 		return fmt.Errorf("certificate does not contain RSA public key")
 	}
-	
+
 	err = rsa.VerifyPKCS1v15(rsaPub, crypto.SHA256, hash[:], sigValue)
 	if err != nil {
 		return fmt.Errorf("signature verification failed: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -351,22 +350,22 @@ func (v *XMLSignatureValidator) extractCertificate(sig *etree.Element) (*x509.Ce
 	if keyInfo == nil {
 		return nil, fmt.Errorf("no KeyInfo element found")
 	}
-	
+
 	x509Cert := keyInfo.FindElement(".//X509Certificate")
 	if x509Cert == nil {
 		return nil, fmt.Errorf("no X509Certificate element found")
 	}
-	
+
 	certData, err := base64.StdEncoding.DecodeString(strings.TrimSpace(x509Cert.Text()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode certificate: %w", err)
 	}
-	
+
 	cert, err := x509.ParseCertificate(certData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse certificate: %w", err)
 	}
-	
+
 	return cert, nil
 }
 
@@ -377,12 +376,12 @@ func (v *XMLSignatureValidator) verifyCertificate(cert *x509.Certificate) error 
 	for _, trustedCert := range v.trustedCerts {
 		roots.AddCert(trustedCert)
 	}
-	
+
 	// Verify certificate chain
 	opts := x509.VerifyOptions{
 		Roots: roots,
 	}
-	
+
 	_, err := cert.Verify(opts)
 	return err
 }

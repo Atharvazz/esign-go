@@ -1,37 +1,11 @@
 package service
 
 import (
-	"crypto/x509"
+	"net/http"
 	
 	"github.com/esign-go/internal/models"
 )
 
-// IEsignService defines the interface for esign service
-type IEsignService interface {
-	// ParseAndValidateRequest parses and validates the incoming XML request
-	ParseAndValidateRequest(xmlData string, clientIP string) (*models.EsignRequest, error)
-	
-	// Authenticate performs authentication with UIDAI
-	Authenticate(request *models.EsignRequest, authData *models.AuthenticationData) (*models.AuthResponse, error)
-	
-	// GenerateOTP generates OTP for the given Aadhaar
-	GenerateOTP(aadhaar string, clientIP string) (*models.OTPResponse, error)
-	
-	// ValidateOTP validates the OTP
-	ValidateOTP(txnID, otp, aadhaar string) (*models.AuthResponse, error)
-	
-	// GenerateDigitalCertificate generates a digital certificate based on auth response
-	GenerateDigitalCertificate(authResponse *models.AuthResponse) (*x509.Certificate, error)
-	
-	// SignDocuments signs the provided documents
-	SignDocuments(documents []models.Document, cert *x509.Certificate) ([]models.SignedDocument, error)
-	
-	// GetTransactionStatus retrieves the status of a transaction
-	GetTransactionStatus(txnID string) (*models.TransactionStatus, error)
-	
-	// ProcessCallback processes callback from UIDAI
-	ProcessCallback(data *models.CallbackData) error
-}
 
 // IXMLValidator defines the interface for XML validation
 type IXMLValidator interface {
@@ -44,35 +18,62 @@ type IXMLValidator interface {
 
 // ICryptoService defines the interface for cryptographic operations
 type ICryptoService interface {
-	// SignData signs the given data
-	SignData(data []byte) ([]byte, error)
+	// SignXML signs XML document
+	SignXML(xmlData string, privateKey, certificate []byte) (string, error)
 	
-	// VerifySignature verifies a signature
-	VerifySignature(data, signature, publicKey []byte) error
+	// VerifyXMLSignature verifies XML signature
+	VerifyXMLSignature(xmlData string) (*models.SignatureInfo, error)
 	
-	// EncryptData encrypts data using the public key
-	EncryptData(data, publicKey []byte) ([]byte, error)
+	// GenerateCertificate generates X.509 certificate
+	GenerateCertificate(subject *models.SubjectInfo, validityDays int) ([]byte, []byte, error)
 	
-	// DecryptData decrypts data using the private key
-	DecryptData(encryptedData []byte) ([]byte, error)
+	// EncryptData encrypts data using public key
+	EncryptData(data []byte, publicKey []byte) ([]byte, error)
 	
-	// GenerateKeyPair generates a new RSA key pair
-	GenerateKeyPair() (privateKey, publicKey []byte, error)
+	// DecryptData decrypts data using private key
+	DecryptData(encryptedData []byte, privateKey []byte) ([]byte, error)
 	
-	// GenerateCertificate generates a new X.509 certificate
-	GenerateCertificate(subjectInfo *models.SubjectInfo, publicKey []byte) (*x509.Certificate, error)
+	// GenerateHash generates hash of data
+	GenerateHash(data []byte, algorithm string) (string, error)
+	
+	// VerifyHash verifies hash of data
+	VerifyHash(data []byte, hash string, algorithm string) bool
 }
 
-// ITemplateService defines the interface for template rendering
+// IKYCService defines the interface for KYC service
+type IKYCService interface {
+	// GenerateOTP generates OTP for Aadhaar
+	GenerateOTP(aadhaar string, requestID int64, req *http.Request, txn, aspID string, attempts int) (*models.OTPGenerationResponse, error)
+	
+	// VerifyOTP verifies OTP
+	VerifyOTP(otpTxn, otp, aadhaar string, requestID int64, req *http.Request, txn, aspID string) (*models.AadhaarDetailsVO, error)
+	
+	// AuthenticateBiometric authenticates using biometric data
+	AuthenticateBiometric(bioData *models.BiometricData, requestID int64, req *http.Request, txn, aspID string) (*models.AadhaarDetailsVO, error)
+	
+	// PerformOfflineKYC performs offline KYC
+	PerformOfflineKYC(xmlData string, shareCode string, requestID int64) (*models.AadhaarDetailsVO, error)
+	
+	// ProcessOkycOTPRequest processes offline KYC OTP request
+	ProcessOkycOTPRequest(req *models.OkycOtpRequest, clientIP string) (*models.OKYCOTPResponse, error)
+	
+	// VerifyOkycOTP verifies offline KYC OTP
+	VerifyOkycOTP(req *models.OkycVerificationModel, clientIP string) (*models.OkycVerificationResponse, error)
+
+	// ProcessFaceRecognition processes face recognition request
+	ProcessFaceRecognition(req *models.FaceRecognitionRequest, clientIP string) (*models.FaceRecognitionResult, error)
+}
+
+// ITemplateService defines the interface for template service
 type ITemplateService interface {
-	// RenderCustomView renders a custom view template
-	RenderCustomView(templateID string, data interface{}) ([]byte, error)
+	// RenderCustomView renders custom view template
+	RenderCustomView(aspID, templateID string, params map[string]string, authMode string) (string, error)
 	
-	// LoadTemplate loads a template by ID
-	LoadTemplate(templateID string) (string, error)
+	// GetTemplate gets template by ID
+	GetTemplate(aspID, templateID string) (*models.Template, error)
 	
-	// RegisterTemplate registers a new template
-	RegisterTemplate(templateID, templateContent string) error
+	// ProcessTemplate processes template with parameters
+	ProcessTemplate(template *models.Template, params map[string]string) (string, error)
 }
 
 // IUIDAIService defines the interface for UIDAI integration
@@ -85,6 +86,37 @@ type IUIDAIService interface {
 	
 	// SendEKYCRequest sends eKYC request to UIDAI
 	SendEKYCRequest(ekycRequest *models.UIDAIEKYCRequest) (*models.UIDAIEKYCResponse, error)
+}
+
+// IRemoteSigningService defines the interface for remote signing
+type IRemoteSigningService interface {
+	// SignDocument signs a document remotely
+	SignDocument(docHash string, certificate []byte, privateKey []byte) (string, error)
+	
+	// SignMultipleDocuments signs multiple documents
+	SignMultipleDocuments(docHashes []string, certificate []byte, privateKey []byte) ([]string, error)
+	
+	// GetSigningCertificate gets signing certificate for user
+	GetSigningCertificate(userID string, kycData *models.AadhaarDetailsVO) ([]byte, []byte, error)
+
+	// HealthCheck checks remote signing service health
+	HealthCheck() error
+
+	// GenerateErrorResponse generates an error response
+	GenerateErrorResponse(errorCode, errorMessage string) string
+}
+
+// Missing interface methods to add to IEsignService
+type IEsignServiceExtended interface {
+	IEsignService
+	// ValidateAndProcessCheckStatus validates and processes check status request
+	ValidateAndProcessCheckStatus(xmlData string, req *http.Request) (string, error)
+	
+	// CheckTransactionStatus checks transaction status by ASP ID and TXN
+	CheckTransactionStatus(aspID, txnID string) (*models.EsignStatusVO, error)
+	
+	// GenerateSignedXMLResponse generates signed XML response
+	GenerateSignedXMLResponse(requestID int64, errCode, errMsg, status, txn, resCode, clientIP string) (string, error)
 }
 
 // IAuditService defines the interface for audit logging

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>eSign Test - Submit Request</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .main-card {
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+            border: none;
+            border-radius: 10px;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            background: #e9ecef;
+            margin: 0 5px;
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .step.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .step.completed {
+            background: #28a745;
+            color: white;
+        }
+        
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .document-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        
+        .document-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4>Processing your request...</h4>
+            <p>Please do not close or refresh this page</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-0">eSign Test Interface</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 mt-2">
+                            <li class="breadcrumb-item"><a href="index.html" class="text-white">Home</a></li>
+                            <li class="breadcrumb-item active text-white-50">eSign Test</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button class="btn btn-light btn-sm" onclick="window.location.href='index.html'">
+                        ← Back to Home
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active" id="step1">
+                <strong>Step 1</strong><br>
+                Configure Request
+            </div>
+            <div class="step" id="step2">
+                <strong>Step 2</strong><br>
+                Add Documents
+            </div>
+            <div class="step" id="step3">
+                <strong>Step 3</strong><br>
+                Submit Request
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="card main-card">
+            <div class="card-body p-4">
+                <form id="esignForm" action="http://localhost:8080/authenticate/esign-doc" method="POST" target="_blank">
+                    <!-- Step 1: Basic Configuration -->
+                    <div id="step1Content">
+                        <h4 class="mb-4">Configure eSign Request</h4>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">ASP ID <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="aspId" value="TEST001" required>
+                                    <small class="text-muted">Your Application Service Provider ID</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Transaction ID <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="aspTxnId" id="txnId" readonly>
+                                    <small class="text-muted">Auto-generated unique transaction ID</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Authentication Mode <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="authMode" required>
+                                        <option value="1" selected>OTP (One Time Password)</option>
+                                        <option value="2">Fingerprint (Biometric)</option>
+                                        <option value="3">Iris (Biometric)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">eKYC ID Type</label>
+                                    <select class="form-select" id="ekycIdType">
+                                        <option value="A" selected>Aadhaar</option>
+                                        <option value="V">VID</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Aadhaar/VID Number <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="ekycId" value="999999990019" 
+                                           pattern="[0-9]{12,16}" maxlength="16" required>
+                                    <small class="text-muted">Test Aadhaar: 999999990019</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Response URL</label>
+                                    <input type="text" class="form-control" id="responseUrl" 
+                                           value="http://localhost:8090/callback">
+                                    <small class="text-muted">URL to receive signed response</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-primary" onclick="nextStep(2)">
+                                Next: Add Documents →
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Add Documents -->
+                    <div id="step2Content" style="display: none;">
+                        <h4 class="mb-4">Add Documents to Sign</h4>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label">Document Info</label>
+                                    <input type="text" class="form-control" id="docInfo" 
+                                           placeholder="e.g., Loan Agreement, Contract, etc.">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="button" class="btn btn-success w-100" onclick="addDocument()">
+                                        + Add Document
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Document Hash (SHA256)</label>
+                            <input type="text" class="form-control" id="docHash" 
+                                   value="a5f3c6d7e8b9a0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5"
+                                   placeholder="Enter SHA256 hash of the document">
+                            <small class="text-muted">Or upload a file to calculate hash automatically</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Upload Document (Optional)</label>
+                            <input type="file" class="form-control" id="fileUpload" onchange="calculateHash()">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Documents to Sign:</label>
+                            <div class="document-list" id="documentList">
+                                <p class="text-muted text-center">No documents added yet</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" onclick="previousStep(1)">
+                                ← Previous
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="nextStep(3)">
+                                Next: Review & Submit →
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Review and Submit -->
+                    <div id="step3Content" style="display: none;">
+                        <h4 class="mb-4">Review and Submit</h4>
+                        
+                        <div class="alert alert-info">
+                            <strong>Review your request details before submitting:</strong>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Request Summary</h5>
+                                <div id="requestSummary"></div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Generated XML Request</h5>
+                                <pre id="xmlPreview" class="bg-light p-3" style="max-height: 300px; overflow-y: auto;"></pre>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="confirmSubmit" required>
+                            <label class="form-check-label" for="confirmSubmit">
+                                I confirm that all details are correct and want to proceed with eSign
+                            </label>
+                        </div>
+
+                        <!-- Hidden fields for form submission -->
+                        <input type="hidden" name="eSignRequest" id="eSignRequest">
+                        <input type="hidden" name="Content-Type" value="application/xml">
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" onclick="previousStep(2)">
+                                ← Previous
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg" id="submitBtn" disabled>
+                                Submit eSign Request
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5>Test Credentials</h5>
+                <ul>
+                    <li><strong>Test Aadhaar:</strong> 999999990019</li>
+                    <li><strong>Test OTP:</strong> 123456</li>
+                    <li><strong>Test ASP ID:</strong> TEST001</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        let documents = [];
+        let currentStep = 1;
+
+        // Initialize transaction ID
+        document.getElementById('txnId').value = 'TEST-' + Date.now();
+
+        function nextStep(step) {
+            if (validateStep(currentStep)) {
+                showStep(step);
+            }
+        }
+
+        function previousStep(step) {
+            showStep(step);
+        }
+
+        function showStep(step) {
+            // Hide all steps
+            document.getElementById('step1Content').style.display = 'none';
+            document.getElementById('step2Content').style.display = 'none';
+            document.getElementById('step3Content').style.display = 'none';
+            
+            // Show current step
+            document.getElementById('step' + step + 'Content').style.display = 'block';
+            
+            // Update step indicators
+            for (let i = 1; i <= 3; i++) {
+                const stepEl = document.getElementById('step' + i);
+                stepEl.classList.remove('active', 'completed');
+                
+                if (i < step) {
+                    stepEl.classList.add('completed');
+                } else if (i === step) {
+                    stepEl.classList.add('active');
+                }
+            }
+            
+            currentStep = step;
+            
+            // Generate preview for step 3
+            if (step === 3) {
+                generatePreview();
+            }
+        }
+
+        function validateStep(step) {
+            if (step === 1) {
+                const aspId = document.getElementById('aspId').value;
+                const ekycId = document.getElementById('ekycId').value;
+                
+                if (!aspId || !ekycId) {
+                    alert('Please fill all required fields');
+                    return false;
+                }
+                
+                if (ekycId.length !== 12 && ekycId.length !== 16) {
+                    alert('Aadhaar must be 12 digits or VID must be 16 digits');
+                    return false;
+                }
+            } else if (step === 2) {
+                if (documents.length === 0) {
+                    alert('Please add at least one document');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        function addDocument() {
+            const docInfo = document.getElementById('docInfo').value || 'Document ' + (documents.length + 1);
+            const docHash = document.getElementById('docHash').value;
+            
+            if (!docHash) {
+                alert('Please provide document hash');
+                return;
+            }
+            
+            const doc = {
+                id: documents.length + 1,
+                info: docInfo,
+                hash: docHash
+            };
+            
+            documents.push(doc);
+            updateDocumentList();
+            
+            // Clear inputs
+            document.getElementById('docInfo').value = '';
+            document.getElementById('docHash').value = '';
+        }
+
+        function removeDocument(index) {
+            documents.splice(index, 1);
+            // Reindex documents
+            documents.forEach((doc, i) => {
+                doc.id = i + 1;
+            });
+            updateDocumentList();
+        }
+
+        function updateDocumentList() {
+            const listEl = document.getElementById('documentList');
+            
+            if (documents.length === 0) {
+                listEl.innerHTML = '<p class="text-muted text-center">No documents added yet</p>';
+            } else {
+                listEl.innerHTML = documents.map((doc, index) => `
+                    <div class="document-item">
+                        <div>
+                            <strong>${doc.info}</strong><br>
+                            <small class="text-muted">${doc.hash.substring(0, 32)}...</small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeDocument(${index})">
+                            Remove
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function calculateHash() {
+            const fileInput = document.getElementById('fileUpload');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const buffer = e.target.result;
+                const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                
+                document.getElementById('docHash').value = hashHex;
+                document.getElementById('docInfo').value = file.name;
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function generatePreview() {
+            const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, '');
+            const aspId = document.getElementById('aspId').value;
+            const txnId = document.getElementById('txnId').value;
+            const authMode = document.getElementById('authMode').value;
+            const ekycIdType = document.getElementById('ekycIdType').value;
+            const ekycId = document.getElementById('ekycId').value;
+            const responseUrl = document.getElementById('responseUrl').value;
+            
+            // Generate XML
+            const docsXml = documents.map(doc => `
+        <InputHash id="${doc.id}" hashAlgorithm="SHA256" docInfo="${doc.info}">
+            ${doc.hash}
+        </InputHash>`).join('');
+            
+            const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Esign ver="2.1" sc="Y" ts="${timestamp}" txn="${txnId}" 
+       ekycIdType="${ekycIdType}" ekycId="${ekycId}" aspId="${aspId}" 
+       AuthMode="${authMode}" responseSigType="pkcs7" 
+       preVerified="n" organizationFlag="n" 
+       responseUrl="${responseUrl}">
+    <Docs>${docsXml}
+    </Docs>
+</Esign>`;
+            
+            // Display preview
+            document.getElementById('xmlPreview').textContent = xml;
+            
+            // Generate summary
+            const authModeText = authMode === '1' ? 'OTP' : authMode === '2' ? 'Fingerprint' : 'Iris';
+            const summary = `
+                <table class="table table-sm">
+                    <tr><td><strong>ASP ID:</strong></td><td>${aspId}</td></tr>
+                    <tr><td><strong>Transaction ID:</strong></td><td>${txnId}</td></tr>
+                    <tr><td><strong>Authentication:</strong></td><td>${authModeText}</td></tr>
+                    <tr><td><strong>Aadhaar/VID:</strong></td><td>${ekycId}</td></tr>
+                    <tr><td><strong>Documents:</strong></td><td>${documents.length} document(s)</td></tr>
+                </table>
+            `;
+            document.getElementById('requestSummary').innerHTML = summary;
+            
+            // Set base64 encoded request
+            document.getElementById('eSignRequest').value = btoa(xml);
+        }
+
+        // Enable submit button when confirmed
+        document.getElementById('confirmSubmit').addEventListener('change', function() {
+            document.getElementById('submitBtn').disabled = !this.checked;
+        });
+
+        // Form submission
+        document.getElementById('esignForm').addEventListener('submit', function(e) {
+            document.getElementById('loadingOverlay').style.display = 'block';
+            
+            // Hide loading after 2 seconds (for demo)
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

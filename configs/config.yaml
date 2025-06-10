@@ -16,13 +16,13 @@ server:
 database:
   host: "localhost"
   port: 5432
-  user: "esign_user"
-  password: "esign_password"
+  user: "atharvaz"
+  password: ""
   dbname: "esign_db"
-  sslMode: "disable"
-  maxOpenConns: 25
-  maxIdleConns: 25
-  maxLifetime: "15m"
+  sslmode: "disable"
+  maxopenconns: 25
+  maxidleconns: 25
+  maxlifetime: "15m"
 
 security:
   jwtSecret: "your-secret-key-here"
@@ -50,7 +50,7 @@ uidai:
     -----END PUBLIC KEY-----
 
 templates:
-  path: "/app/esign/templates"
+  path: "../../templates"
   cacheTemplates: true
 
 rateLimit:

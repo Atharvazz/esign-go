@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eSign Authentication - OTP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .info {
+            background: #e8f4f8;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #1976D2;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .otp-section {
+            display: none;
+        }
+        .error {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .success {
+            color: #4CAF50;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>eSign Authentication</h2>
+        
+        <div class="info">
+            <p><strong>Legal Name:</strong> {{.ln}}</p>
+            <p><strong>Transaction ID:</strong> {{.msg3}}</p>
+            <p><strong>Request ID:</strong> {{.rid}}</p>
+        </div>
+
+        <form id="otpForm">
+            <div class="form-group">
+                <label for="aadhaar">Enter Aadhaar Number:</label>
+                <input type="text" id="aadhaar" name="aadhaar" pattern="[0-9]{12}" maxlength="12" required>
+                <div class="error" id="aadhaarError"></div>
+            </div>
+            
+            <button type="button" class="btn" id="sendOtpBtn" onclick="sendOTP()">Send OTP</button>
+            
+            <div class="otp-section" id="otpSection">
+                <div class="form-group">
+                    <label for="otp">Enter OTP:</label>
+                    <input type="tel" id="otp" name="otp" pattern="[0-9]{6}" maxlength="6" required>
+                    <div class="error" id="otpError"></div>
+                </div>
+                <button type="button" class="btn" id="verifyOtpBtn" onclick="verifyOTP()">Verify OTP</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const requestData = {
+            rid: '{{.rid}}',
+            authMode: '{{.authMod}}'
+        };
+        
+        let otpTxn = '';
+        
+        function sendOTP() {
+            const aadhaar = document.getElementById('aadhaar').value;
+            const aadhaarError = document.getElementById('aadhaarError');
+            
+            // Validate Aadhaar
+            if (!/^[0-9]{12}$/.test(aadhaar)) {
+                aadhaarError.textContent = 'Please enter valid 12-digit Aadhaar number';
+                return;
+            }
+            
+            aadhaarError.textContent = '';
+            document.getElementById('sendOtpBtn').disabled = true;
+            
+            // Send OTP request
+            fetch('/authenticate/otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    rid: requestData.rid,
+                    uid: aadhaar
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === '1') {
+                    otpTxn = data.otpTxn;
+                    document.getElementById('otpSection').style.display = 'block';
+                    alert('OTP sent successfully to your registered mobile number');
+                } else {
+                    aadhaarError.textContent = data.msg || 'Failed to send OTP';
+                }
+                document.getElementById('sendOtpBtn').disabled = false;
+            })
+            .catch(error => {
+                aadhaarError.textContent = 'Error sending OTP. Please try again.';
+                document.getElementById('sendOtpBtn').disabled = false;
+            });
+        }
+        
+        function verifyOTP() {
+            const aadhaar = document.getElementById('aadhaar').value;
+            const otp = document.getElementById('otp').value;
+            const otpError = document.getElementById('otpError');
+            
+            // Validate OTP
+            if (!/^[0-9]{6}$/.test(otp)) {
+                otpError.textContent = 'Please enter valid 6-digit OTP';
+                return;
+            }
+            
+            otpError.textContent = '';
+            document.getElementById('verifyOtpBtn').disabled = true;
+            
+            // Verify OTP
+            fetch('/authenticate/otpAction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    rid: requestData.rid,
+                    otpTxn: otpTxn,
+                    otp: otp,
+                    uid: aadhaar
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'OK') {
+                    // Auto-submit form
+                    const form = document.createElement('div');
+                    form.innerHTML = data.form;
+                    document.body.appendChild(form);
+                    form.querySelector('form').submit();
+                } else {
+                    otpError.textContent = data.msg || 'Invalid OTP';
+                }
+                document.getElementById('verifyOtpBtn').disabled = false;
+            })
+            .catch(error => {
+                otpError.textContent = 'Error verifying OTP. Please try again.';
+                document.getElementById('verifyOtpBtn').disabled = false;
+            });
+        }
+        
+        // Add last 4 digits validation if provided
+        const adr = '{{.adr}}';
+        if (adr) {
+            document.getElementById('aadhaar').addEventListener('blur', function() {
+                const aadhaar = this.value;
+                if (aadhaar.length === 12 && aadhaar.slice(-4) !== adr) {
+                    document.getElementById('aadhaarError').textContent = 'Aadhaar number does not match records';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
