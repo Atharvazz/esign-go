@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eSign - Select Biometric Method</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .container-custom {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+        .panel-primary {
+            border: 1px solid #0d6efd;
+            border-radius: 8px;
+        }
+        .panel-heading {
+            background-color: #0d6efd;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .panel-body {
+            padding: 2rem;
+        }
+        .biometric-option {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .biometric-option:hover {
+            border-color: #0d6efd;
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .biometric-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            display: block;
+        }
+        .btn-primary {
+            background-color: #0d6efd;
+            border: none;
+            padding: 0.5rem 2rem;
+            margin: 0.5rem;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+            padding: 0.5rem 2rem;
+            margin: 0.5rem;
+        }
+        footer {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.875rem;
+        }
+        .info-box {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d7ff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container container-custom">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Protean Electronic Signature Service - Select Biometric Method</div>
+            <div class="panel-body">
+                <!-- Transaction Info -->
+                <div class="text-center mb-4">
+                    <p><strong>{{.ASPName}}</strong> has requested to Digitally sign the document</p>
+                    <p>Transaction ID: <strong>{{.TransactionID}}</strong> dated <strong>{{.Timestamp}}</strong></p>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-box">
+                    <p class="mb-0"><strong>Please select your preferred biometric authentication method:</strong></p>
+                    <small>You will need to have the appropriate biometric device connected to proceed.</small>
+                </div>
+
+                <!-- Biometric Options -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="biometric-option" onclick="selectBiometric('fingerprint')">
+                            <svg class="biometric-icon" viewBox="0 0 24 24">
+                                <path fill="#0d6efd" d="M17.81,4.47C17.73,4.47 17.65,4.45 17.58,4.41C15.66,3.42 14,3 12,3C10.03,3 8.15,3.47 6.44,4.41C6.2,4.54 5.9,4.45 5.76,4.21C5.63,3.97 5.72,3.66 5.96,3.53C7.82,2.5 9.86,2 12,2C14.14,2 16,2.47 18.04,3.5C18.29,3.65 18.38,3.95 18.25,4.19C18.16,4.37 18,4.47 17.81,4.47M3.5,9.72C3.4,9.72 3.3,9.69 3.21,9.63C3,9.47 2.93,9.16 3.09,8.93C4.08,7.53 5.34,6.43 6.84,5.66C10,4.04 14,4.03 17.15,5.65C18.65,6.42 19.91,7.5 20.9,8.9C21.06,9.12 21,9.44 20.78,9.6C20.55,9.76 20.24,9.71 20.08,9.5C19.18,8.22 18.04,7.23 16.69,6.54C13.82,5.07 10.15,5.07 7.29,6.55C5.93,7.25 4.79,8.25 3.89,9.5C3.81,9.65 3.66,9.72 3.5,9.72M9.75,21.79C9.62,21.79 9.5,21.74 9.4,21.64C8.53,20.77 8.06,19.58 8.06,18.36C8.06,17.13 8.53,15.95 9.4,15.08C10.27,14.21 11.46,13.74 12.69,13.74C13.91,13.74 15.1,14.21 15.97,15.08C16.84,15.95 17.31,17.13 17.31,18.36C17.31,19.58 16.84,20.77 15.97,21.64C15.72,21.89 15.31,21.89 15.06,21.64C14.81,21.39 14.81,20.98 15.06,20.73C15.71,20.08 16.07,19.23 16.07,18.36C16.07,17.5 15.71,16.64 15.06,16C14.41,15.35 13.56,14.97 12.69,14.97C11.82,14.97 10.97,15.35 10.32,16C9.67,16.64 9.31,17.5 9.31,18.36C9.31,19.23 9.67,20.08 10.32,20.73C10.57,20.98 10.57,21.39 10.32,21.64C10.22,21.74 10.1,21.79 9.75,21.79M16.92,19.94C15.73,19.94 14.68,19.64 13.82,19.05C12.33,18.04 11.44,16.4 11.44,14.66C11.44,11.69 13.69,9.27 16.5,8.96C16.87,8.92 17.21,9.19 17.25,9.56C17.29,9.94 17.03,10.27 16.66,10.31C14.58,10.58 12.94,12.45 12.94,14.66C12.94,16.07 13.65,17.43 14.85,18.3C15.5,18.77 16.26,19 17.13,19C17.5,19 17.83,19.27 17.87,19.64C17.91,20.03 17.65,20.36 17.28,20.4C17.16,20.42 17.04,20.43 16.92,19.94M14.91,22C14.87,22 14.82,22 14.78,22C13.19,21.54 12.15,20.95 11.06,19.88C9.66,18.5 8.89,16.64 8.89,14.66C8.89,11.72 11.13,9.33 14,9C14.38,8.96 14.72,9.24 14.76,9.62C14.8,10 14.53,10.34 14.15,10.38C12.07,10.64 10.44,12.5 10.44,14.66C10.44,16.24 11.07,17.72 12.2,18.81C13.07,19.68 13.89,20.15 15.18,20.54C15.55,20.64 15.77,21.03 15.67,21.4C15.59,21.71 15.3,22 14.91,22M18,21.54C17.94,21.54 17.89,21.53 17.83,21.5C16.27,20.68 15.17,19.19 14.77,17.42C14.73,17.03 15,16.68 15.39,16.64C15.78,16.6 16.13,16.87 16.17,17.26C16.5,18.71 17.37,19.95 18.57,20.66C18.93,20.88 19.03,21.35 18.8,21.7C18.66,21.91 18.43,22 18,21.54Z"/>
+                            </svg>
+                            <h5>Fingerprint</h5>
+                            <p class="text-muted mb-0">Authenticate using your fingerprint</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="biometric-option" onclick="selectBiometric('iris')">
+                            <svg class="biometric-icon" viewBox="0 0 24 24">
+                                <path fill="#0d6efd" d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5M3.18,12C4.83,8.87 8.21,6.5 12,6.5C15.79,6.5 19.17,8.87 20.82,12C19.17,15.13 15.79,17.5 12,17.5C8.21,17.5 4.83,15.13 3.18,12Z"/>
+                            </svg>
+                            <h5>Iris Scan</h5>
+                            <p class="text-muted mb-0">Authenticate using iris recognition</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alternative Options -->
+                <div class="text-center mt-4">
+                    <p class="text-muted">Or choose a different authentication method:</p>
+                    <button class="btn btn-outline-primary" onclick="switchToOTP()">
+                        Use OTP Instead
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="switchToOfflineKYC()">
+                        Use Offline KYC
+                    </button>
+                </div>
+
+                <!-- Cancel Button -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-secondary" onclick="cancelRequest()">
+                        Cancel Request
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Please select your preferred biometric authentication method to proceed.
+    </footer>
+
+    <script>
+        // Global variables
+        let requestData = {};
+
+        // Parse request data from URL or session
+        window.onload = function() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const encodedData = urlParams.get('data');
+                if (encodedData) {
+                    requestData = JSON.parse(atob(encodedData));
+                }
+            } catch (error) {
+                console.error('Error loading request data:', error);
+            }
+        };
+
+        // Select biometric method
+        function selectBiometric(method) {
+            const rid = requestData.rid || '';
+            const encodedData = btoa(JSON.stringify(requestData));
+            
+            if (method === 'fingerprint') {
+                window.location.href = '/auth/biometric/fingerprint?data=' + encodedData;
+            } else if (method === 'iris') {
+                window.location.href = '/auth/biometric/iris?data=' + encodedData;
+            }
+        }
+
+        // Switch to OTP authentication
+        function switchToOTP() {
+            const encodedData = btoa(JSON.stringify(requestData));
+            window.location.href = '/auth/otp?data=' + encodedData;
+        }
+
+        // Switch to Offline KYC
+        function switchToOfflineKYC() {
+            const encodedData = btoa(JSON.stringify(requestData));
+            window.location.href = '/auth/offline-kyc?data=' + encodedData;
+        }
+
+        // Cancel request
+        function cancelRequest() {
+            if (confirm('Are you sure you want to cancel this request?')) {
+                const rid = requestData.rid || '';
+                window.location.href = '/api/v2/cancel?rid=' + rid + '&stage=biometric-selection';
+            }
+        }
+    </script>
+</body>
+</html>

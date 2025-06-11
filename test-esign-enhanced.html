@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced eSign Test Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        .test-section {
+            border: 2px dashed #dee2e6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-success { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+        .status-pending { background-color: #ffc107; }
+        .quick-test-btn {
+            margin: 5px;
+        }
+        .response-viewer {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="text-center mb-4">Enhanced eSign Test Interface</h1>
+        
+        <!-- Server Status -->
+        <div class="card">
+            <div class="card-header">Server Status</div>
+            <div class="card-body">
+                <div id="serverStatus">
+                    <span class="status-indicator status-pending"></span>
+                    Checking server status...
+                </div>
+                <button class="btn btn-sm btn-primary mt-2" onclick="checkServerStatus()">Refresh Status</button>
+            </div>
+        </div>
+
+        <!-- Quick Test Scenarios -->
+        <div class="card">
+            <div class="card-header">Quick Test Scenarios</div>
+            <div class="card-body">
+                <h5>Authentication Modes</h5>
+                <div class="btn-group-vertical w-100">
+                    <button class="btn btn-outline-primary quick-test-btn" onclick="quickTest('otp', 'standard')">
+                        OTP Authentication - Standard UI
+                    </button>
+                    <button class="btn btn-outline-primary quick-test-btn" onclick="quickTest('otp', 'enhanced')">
+                        OTP Authentication - Enhanced UX
+                    </button>
+                    <button class="btn btn-outline-primary quick-test-btn" onclick="quickTest('biometric', 'fingerprint')">
+                        Biometric - Fingerprint
+                    </button>
+                    <button class="btn btn-outline-primary quick-test-btn" onclick="quickTest('biometric', 'iris')">
+                        Biometric - Iris
+                    </button>
+                    <button class="btn btn-outline-primary quick-test-btn" onclick="quickTest('biometric', 'select')">
+                        Biometric - Selection Page
+                    </button>
+                    <button class="btn btn-outline-primary quick-test-btn" onclick="quickTest('offline', 'standard')">
+                        Offline KYC
+                    </button>
+                </div>
+
+                <h5 class="mt-3">Custom ASP Themes</h5>
+                <div class="btn-group-vertical w-100">
+                    <button class="btn btn-outline-success quick-test-btn" onclick="quickTest('otp', 'enhanced', 'HDFC')">
+                        HDFC Bank Theme
+                    </button>
+                    <button class="btn btn-outline-success quick-test-btn" onclick="quickTest('otp', 'enhanced', 'ICICI')">
+                        ICICI Bank Theme
+                    </button>
+                    <button class="btn btn-outline-success quick-test-btn" onclick="quickTest('otp', 'enhanced', 'KARNATAKA-GOV')">
+                        Karnataka Government Theme
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Test Configuration -->
+        <div class="card">
+            <div class="card-header">Manual Test Configuration</div>
+            <div class="card-body">
+                <form id="testForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label>ASP ID:</label>
+                                <select class="form-control" id="aspId">
+                                    <option value="TEST001">TEST001 (Default)</option>
+                                    <option value="HDFC">HDFC Bank</option>
+                                    <option value="ICICI">ICICI Bank</option>
+                                    <option value="KARNATAKA-GOV">Karnataka Government</option>
+                                    <option value="CUSTOM">Custom ASP</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label>Auth Mode:</label>
+                                <select class="form-control" id="authMode">
+                                    <option value="1">1 - OTP</option>
+                                    <option value="2">2 - Biometric (Fingerprint)</option>
+                                    <option value="3">3 - Biometric (Iris)</option>
+                                    <option value="4">4 - Offline KYC</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label>UI Mode:</label>
+                                <select class="form-control" id="uiMode">
+                                    <option value="standard">Standard</option>
+                                    <option value="enhanced">Enhanced UX</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label>Transaction ID:</label>
+                                <input type="text" class="form-control" id="txnId" value="TEST-TXN-001">
+                            </div>
+                            <div class="mb-3">
+                                <label>Signer ID:</label>
+                                <input type="text" class="form-control" id="signerId" value="test@example.com">
+                            </div>
+                            <div class="mb-3">
+                                <label>Callback URL:</label>
+                                <input type="text" class="form-control" id="callbackUrl" value="http://localhost:8090/callback">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label>Document Hash (SHA256):</label>
+                        <input type="text" class="form-control" id="docHash" 
+                               value="2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b">
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="submitTestRequest()">
+                        Submit eSign Request
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="generateXML()">
+                        Generate XML Only
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- API Testing -->
+        <div class="card">
+            <div class="card-header">API Testing</div>
+            <div class="card-body">
+                <div class="test-section">
+                    <h5>Modern API Endpoints (v2)</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Send OTP</h6>
+                            <input type="text" class="form-control mb-2" id="api_rid" placeholder="Request ID">
+                            <input type="text" class="form-control mb-2" id="api_uid" placeholder="Aadhaar (12 digits)">
+                            <button class="btn btn-primary btn-sm" onclick="testSendOTP()">Send OTP</button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Verify OTP</h6>
+                            <input type="text" class="form-control mb-2" id="api_otpTxn" placeholder="OTP Transaction ID">
+                            <input type="text" class="form-control mb-2" id="api_otp" placeholder="OTP (6 digits)">
+                            <button class="btn btn-primary btn-sm" onclick="testVerifyOTP()">Verify OTP</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Response Viewer -->
+        <div class="card">
+            <div class="card-header">Response Viewer</div>
+            <div class="card-body">
+                <div class="response-viewer">
+                    <pre id="responseViewer">No responses yet...</pre>
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="clearResponses()">Clear</button>
+            </div>
+        </div>
+
+        <!-- Generated XML Viewer -->
+        <div class="card">
+            <div class="card-header">Generated XML</div>
+            <div class="card-body">
+                <div class="code-block" id="xmlViewer">
+                    XML will appear here...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check server status on load
+        window.onload = function() {
+            checkServerStatus();
+        };
+
+        function checkServerStatus() {
+            fetch('http://localhost:8090/health')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('serverStatus').innerHTML = 
+                        '<span class="status-indicator status-success"></span>Server is running - ' + 
+                        'Build: ' + (data.build || 'N/A');
+                })
+                .catch(error => {
+                    document.getElementById('serverStatus').innerHTML = 
+                        '<span class="status-indicator status-error"></span>Server is not responding';
+                });
+        }
+
+        function quickTest(authType, mode, aspId = 'TEST001') {
+            // Set form values based on quick test selection
+            document.getElementById('aspId').value = aspId;
+            
+            switch(authType) {
+                case 'otp':
+                    document.getElementById('authMode').value = '1';
+                    break;
+                case 'biometric':
+                    if (mode === 'fingerprint') {
+                        document.getElementById('authMode').value = '2';
+                    } else if (mode === 'iris') {
+                        document.getElementById('authMode').value = '3';
+                    } else {
+                        document.getElementById('authMode').value = '2';
+                    }
+                    break;
+                case 'offline':
+                    document.getElementById('authMode').value = '4';
+                    break;
+            }
+            
+            document.getElementById('uiMode').value = mode === 'enhanced' ? 'enhanced' : 'standard';
+            
+            // Auto-generate transaction ID
+            document.getElementById('txnId').value = 'TEST-' + Date.now();
+            
+            // Submit the request
+            submitTestRequest();
+        }
+
+        function generateXML() {
+            const aspId = document.getElementById('aspId').value;
+            const authMode = document.getElementById('authMode').value;
+            const txnId = document.getElementById('txnId').value;
+            const signerId = document.getElementById('signerId').value;
+            const callbackUrl = document.getElementById('callbackUrl').value;
+            const docHash = document.getElementById('docHash').value;
+            
+            const timestamp = new Date().toISOString().replace(/\.\d{3}Z/, 'Z');
+            
+            const xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Esign AuthMode="${authMode}" 
+       aspId="${aspId}" 
+       ekycId="XXXXXXXXX" 
+       ekycIdType="A" 
+       responseSigType="pkcs7" 
+       responseUrl="${callbackUrl}" 
+       sc="Y" 
+       signerid="${signerId}"
+       ts="${timestamp}" 
+       txn="${txnId}" 
+       ver="2.1">
+    <Docs>
+        <InputHash docInfo="Test Document" 
+                   hashAlgorithm="SHA256" 
+                   id="1">${docHash}</InputHash>
+    </Docs>
+</Esign>`;
+            
+            document.getElementById('xmlViewer').textContent = xml;
+            return xml;
+        }
+
+        function submitTestRequest() {
+            const xml = generateXML();
+            const encodedXML = btoa(xml);
+            const uiMode = document.getElementById('uiMode').value;
+            
+            // Create form and submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'http://localhost:8090/authenticate/esign-doc';
+            
+            const msgInput = document.createElement('input');
+            msgInput.type = 'hidden';
+            msgInput.name = 'msg';
+            msgInput.value = encodedXML;
+            form.appendChild(msgInput);
+            
+            document.body.appendChild(form);
+            
+            // Add UI mode to session before submitting
+            if (uiMode === 'enhanced') {
+                // Store preference in localStorage for the redirect handler
+                localStorage.setItem('esign_ui_mode', 'enhanced');
+            }
+            
+            form.submit();
+        }
+
+        function testSendOTP() {
+            const rid = document.getElementById('api_rid').value;
+            const uid = document.getElementById('api_uid').value;
+            
+            if (!rid || !uid) {
+                alert('Please enter Request ID and Aadhaar');
+                return;
+            }
+            
+            fetch('http://localhost:8090/authenticate/api/v2/auth/send-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    rid: parseInt(rid),
+                    uid: uid
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                addResponse('Send OTP Response', data);
+                if (data.data && data.data.otpTxn) {
+                    document.getElementById('api_otpTxn').value = data.data.otpTxn;
+                }
+            })
+            .catch(error => {
+                addResponse('Send OTP Error', error.message);
+            });
+        }
+
+        function testVerifyOTP() {
+            const rid = document.getElementById('api_rid').value;
+            const uid = document.getElementById('api_uid').value;
+            const otpTxn = document.getElementById('api_otpTxn').value;
+            const otp = document.getElementById('api_otp').value;
+            
+            if (!rid || !uid || !otpTxn || !otp) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            fetch('http://localhost:8090/authenticate/api/v2/auth/verify-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    rid: parseInt(rid),
+                    uid: uid,
+                    otpTxn: otpTxn,
+                    otp: otp
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                addResponse('Verify OTP Response', data);
+            })
+            .catch(error => {
+                addResponse('Verify OTP Error', error.message);
+            });
+        }
+
+        function addResponse(title, data) {
+            const viewer = document.getElementById('responseViewer');
+            const timestamp = new Date().toLocaleTimeString();
+            const response = `[${timestamp}] ${title}:\n${JSON.stringify(data, null, 2)}\n\n`;
+            viewer.textContent = response + viewer.textContent;
+        }
+
+        function clearResponses() {
+            document.getElementById('responseViewer').textContent = 'No responses yet...';
+        }
+
+        // Listen for redirect and add UI mode parameter if needed
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'esign-redirect') {
+                const uiMode = localStorage.getItem('esign_ui_mode');
+                if (uiMode === 'enhanced' && event.data.url) {
+                    window.location.href = event.data.url + '&ux=enhanced';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

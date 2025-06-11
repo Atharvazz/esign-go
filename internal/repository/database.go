@@ -13,10 +13,18 @@ import (
 // InitDB initializes the database connection
 func InitDB(cfg config.DatabaseConfig) (*sql.DB, error) {
 	// Build connection string
-	connStr := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
-	)
+	var connStr string
+	if cfg.Password != "" {
+		connStr = fmt.Sprintf(
+			"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+			cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
+		)
+	} else {
+		connStr = fmt.Sprintf(
+			"host=%s port=%d user=%s dbname=%s sslmode=%s",
+			cfg.Host, cfg.Port, cfg.User, cfg.DBName, cfg.SSLMode,
+		)
+	}
 
 	// Open database connection
 	db, err := sql.Open("postgres", connStr)

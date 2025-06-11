@@ -1,0 +1,60 @@
+2025/06/10 16:49:39 Starting test server with direct connection...
+2025/06/10 16:49:39 Connection string: host=localhost port=5432 user=atharvaz dbname=esign_db sslmode=disable
+2025/06/10 16:49:39 ✓ Database connected successfully!
+2025/06/10 16:49:39 ✓ Migrations completed successfully!
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] Loaded HTML Templates (21): 
+	- esign-cancelled.html
+	- otp_auth.html
+	- otp_input.html
+	- sigError.html
+	- auth_biometric_fingerprint.html
+	- auth_okyc.html
+	- auth_otp_ux.html
+	- esign-success.html
+	- esignFailed.html
+	- authFail.html
+	- error.html
+	- esign-cancel.html
+	- 
+	- auth.html
+	- auth_offline_kyc.html
+	- esign-failed.html
+	- rd.html
+	- success.html
+	- authExpired.html
+	- auth_biometric.html
+	- auth_biometric_iris.html
+
+[GIN-debug] GET    /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (3 handlers)
+[GIN-debug] HEAD   /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (3 handlers)
+[GIN-debug] GET    /health                   --> main.main.func1 (3 handlers)
+[GIN-debug] GET    /test                     --> main.main.func2 (3 handlers)
+[GIN-debug] POST   /api/test                 --> main.main.func3 (3 handlers)
+[GIN-debug] GET    /test-esign-form.html     --> main.main.(*RouterGroup).StaticFile.func9 (3 handlers)
+[GIN-debug] HEAD   /test-esign-form.html     --> main.main.(*RouterGroup).StaticFile.func9 (3 handlers)
+[GIN-debug] GET    /test-esign-enhanced.html --> main.main.(*RouterGroup).StaticFile.func10 (3 handlers)
+[GIN-debug] HEAD   /test-esign-enhanced.html --> main.main.(*RouterGroup).StaticFile.func10 (3 handlers)
+2025/06/10 16:49:39 ✓ Server started successfully on :8090
+2025/06/10 16:49:39 
+Test URLs:
+2025/06/10 16:49:39   Health Check:    http://localhost:8090/health
+2025/06/10 16:49:39   Test Page:       http://localhost:8090/test
+2025/06/10 16:49:39   Test Form:       http://localhost:8090/test-esign-form.html
+2025/06/10 16:49:39   Enhanced Test:   http://localhost:8090/test-esign-enhanced.html
+2025/06/10 16:49:39 
+Press Ctrl+C to stop the server
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8090
+[GIN] 2025/06/10 - 16:50:01 | 200 |     185.167µs |             ::1 | GET      "/health"
+[GIN] 2025/06/10 - 16:51:25 | 200 |    6.407208ms |             ::1 | GET      "/test"
+[GIN] 2025/06/10 - 16:52:11 | 200 |      85.916µs |             ::1 | GET      "/health"
+[GIN] 2025/06/10 - 16:52:11 | 200 |    7.274834ms |             ::1 | GET      "/test"
+[GIN] 2025/06/10 - 16:52:11 | 200 |     137.875µs |             ::1 | POST     "/api/test"
+[GIN] 2025/06/10 - 16:52:11 | 200 |    3.983875ms |             ::1 | GET      "/test-esign-form.html"

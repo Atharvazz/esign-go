@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/esign-go/internal/config"
 	"github.com/esign-go/internal/models"
 	"github.com/esign-go/pkg/errors"
 	"github.com/esign-go/pkg/logger"
@@ -18,12 +19,12 @@ import (
 // KYCService implements IKYCService interface
 type KYCService struct {
 	uidaiClient *http.Client
-	config      *models.Config
+	config      *config.Config
 	cryptoSvc   ICryptoService
 }
 
 // NewKYCService creates a new KYC service instance
-func NewKYCService(config *models.Config, cryptoSvc ICryptoService) *KYCService {
+func NewKYCService(config *config.Config, cryptoSvc ICryptoService) *KYCService {
 	return &KYCService{
 		uidaiClient: &http.Client{
 			Timeout: time.Duration(config.UIDAI.Timeout) * time.Second,
@@ -68,7 +69,7 @@ func (s *KYCService) GenerateOTP(aadhaar string, requestID int64, req *http.Requ
 	}
 
 	// Send request to UIDAI
-	httpReq, err := http.NewRequest("POST", s.config.UIDAI.OtpURL, bytes.NewBufferString(signedXML))
+	httpReq, err := http.NewRequest("POST", s.config.UIDAI.OTPAuthURL, bytes.NewBufferString(signedXML))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
@@ -101,7 +102,7 @@ func (s *KYCService) GenerateOTP(aadhaar string, requestID int64, req *http.Requ
 		Status:       "1",
 		OtpTxn:       uidaiResp.TxnID,
 		MaskedMobile: uidaiResp.MaskedMobile,
-		RetryCount:   s.config.OTPRetryAttempts - attempts,
+		RetryCount:   s.config.Auth.OTPRetryAttempts - attempts,
 	}, nil
 }
 
@@ -325,7 +326,7 @@ func (s *KYCService) fetchEKYC(authCode, txnID string) (*models.AadhaarDetailsVO
 	}
 
 	// Send request to UIDAI
-	httpReq, err := http.NewRequest("POST", s.config.UIDAI.EkycURL, bytes.NewBufferString(signedXML))
+	httpReq, err := http.NewRequest("POST", s.config.UIDAI.EKYCAuthURL, bytes.NewBufferString(signedXML))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
@@ -430,7 +431,7 @@ func (s *KYCService) ProcessOkycOTPRequest(req *models.OkycOtpRequest, clientIP 
 		Status:     "1",
 		Msg:        "OTP sent on registered mobile.",
 		OtpTxn:     otpTxn,
-		RetryCount: s.config.OTPRetryAttempts,
+		RetryCount: s.config.Auth.OTPRetryAttempts,
 	}, nil
 }
 

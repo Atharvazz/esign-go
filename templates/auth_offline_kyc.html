@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eSign - Offline KYC Authentication</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .container-custom {
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+        .panel-primary {
+            border: 1px solid #0d6efd;
+            border-radius: 8px;
+        }
+        .panel-heading {
+            background-color: #0d6efd;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .panel-body {
+            padding: 2rem;
+        }
+        .consent-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .btn-primary {
+            background-color: #0d6efd;
+            border: none;
+            padding: 0.5rem 2rem;
+            margin: 0.5rem;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+            padding: 0.5rem 2rem;
+            margin: 0.5rem;
+        }
+        .error-msg {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .success-msg {
+            color: #198754;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #0d6efd;
+            background-color: #e7f1ff;
+        }
+        .upload-area.dragover {
+            border-color: #0d6efd;
+            background-color: #e7f1ff;
+        }
+        .file-info {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+        .progress {
+            display: none;
+            margin: 1rem 0;
+        }
+        footer {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.875rem;
+        }
+        .instructions {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container container-custom">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Protean Electronic Signature Service - Offline KYC Authentication</div>
+            <div class="panel-body">
+                <!-- Transaction Info -->
+                <div class="text-center mb-4">
+                    <p><strong>{{.ASPName}}</strong> has requested to Digitally sign the document</p>
+                    <p>Transaction ID: <strong>{{.TransactionID}}</strong> dated <strong>{{.Timestamp}}</strong></p>
+                </div>
+
+                <!-- Instructions -->
+                <div class="instructions">
+                    <h5>Instructions for Offline KYC:</h5>
+                    <ol class="mb-0">
+                        <li>Download your Aadhaar XML from UIDAI website</li>
+                        <li>The XML file should be password protected (share code)</li>
+                        <li>Upload the XML file and enter the share code</li>
+                        <li>Your identity will be verified using the offline KYC data</li>
+                    </ol>
+                    <p class="mb-0 mt-2">
+                        <a href="https://resident.uidai.gov.in/offline-kyc" target="_blank" class="btn btn-sm btn-warning">
+                            Download Aadhaar XML
+                        </a>
+                    </p>
+                </div>
+
+                <!-- Consent Section -->
+                <div class="consent-box">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="consentCheck">
+                        <label class="form-check-label" for="consentCheck">
+                            I hereby authorize Protean eGov Technologies Limited to:
+                        </label>
+                    </div>
+                    <ol>
+                        <li>Use my Aadhaar offline KYC data for authentication and digital signature generation.</li>
+                        <li>Verify my identity using the offline KYC XML file that I have downloaded from UIDAI website.</li>
+                        <li>I understand that the offline KYC data will be used only for this transaction and will not be stored beyond the required period.</li>
+                        <li>I confirm that the XML file I'm uploading is genuine and downloaded from the official UIDAI website.</li>
+                    </ol>
+                </div>
+
+                <!-- File Upload Section -->
+                <div class="row justify-content-center mb-4">
+                    <div class="col-md-10">
+                        <!-- Upload Area -->
+                        <div class="upload-area" id="uploadArea">
+                            <input type="file" id="fileInput" accept=".xml" style="display: none;">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="#6c757d">
+                                <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/>
+                            </svg>
+                            <h5 class="mt-3">Drop your Aadhaar XML file here</h5>
+                            <p class="text-muted">or click to browse</p>
+                            <button class="btn btn-outline-primary">Select File</button>
+                        </div>
+
+                        <!-- File Info -->
+                        <div class="file-info" id="fileInfo">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Selected File:</strong> <span id="fileName"></span><br>
+                                    <small class="text-muted">Size: <span id="fileSize"></span></small>
+                                </div>
+                                <button class="btn btn-sm btn-danger" onclick="removeFile()">Remove</button>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+
+                        <!-- Share Code Input -->
+                        <div class="mt-4" id="shareCodeSection" style="display: none;">
+                            <label for="shareCode" class="form-label">Enter Share Code (4 characters):</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="shareCode" 
+                                       placeholder="Enter 4-character share code" maxlength="4" 
+                                       pattern="[0-9]{4}" style="text-transform: uppercase;">
+                                <button class="btn btn-outline-secondary" type="button" onclick="toggleShareCodeVisibility()">
+                                    <span id="toggleIcon">👁️</span>
+                                </button>
+                            </div>
+                            <div id="shareCodeError" class="error-msg"></div>
+                        </div>
+
+                        <!-- Status Messages -->
+                        <div id="uploadStatus" class="mt-3"></div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-primary" onclick="proceedWithOfflineKYC()" id="proceedBtn" disabled>
+                        Verify & Proceed
+                    </button>
+                    <button class="btn btn-secondary" onclick="cancelRequest()">
+                        Cancel
+                    </button>
+                </div>
+
+                <!-- Additional Links -->
+                <div class="text-center mt-3">
+                    <small>
+                        <a href="https://resident.uidai.gov.in/offline-kyc" target="_blank">Click Here</a> to download Aadhaar XML.
+                        <a href="#" target="_blank">Download Instructions</a> for offline KYC process.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Please do not press "Submit" button once again or the "Refresh" or "Back" buttons.
+    </footer>
+
+    <script>
+        // Global variables
+        let requestData = {};
+        let selectedFile = null;
+        let fileContent = null;
+
+        // Parse request data from URL or session
+        window.onload = function() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const encodedData = urlParams.get('data');
+                if (encodedData) {
+                    requestData = JSON.parse(atob(encodedData));
+                }
+                
+                setupEventListeners();
+            } catch (error) {
+                console.error('Error loading request data:', error);
+            }
+        };
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            
+            // Click to upload
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            // Drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            // File input change
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+            
+            // Consent checkbox
+            document.getElementById('consentCheck').addEventListener('change', checkProceedEnabled);
+            
+            // Share code input
+            document.getElementById('shareCode').addEventListener('input', function() {
+                this.value = this.value.toUpperCase().replace(/[^0-9]/g, '');
+                validateShareCode();
+                checkProceedEnabled();
+            });
+        }
+
+        // Handle file selection
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            const file = files[0];
+            
+            // Validate file type
+            if (!file.name.toLowerCase().endsWith('.xml')) {
+                showError('Please select a valid XML file');
+                return;
+            }
+            
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showError('File size must be less than 5MB');
+                return;
+            }
+            
+            selectedFile = file;
+            displayFileInfo(file);
+            readFile(file);
+        }
+
+        // Display file information
+        function displayFileInfo(file) {
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileInfo').style.display = 'block';
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('shareCodeSection').style.display = 'block';
+            
+            checkProceedEnabled();
+        }
+
+        // Read file content
+        function readFile(file) {
+            const reader = new FileReader();
+            const progress = document.querySelector('.progress');
+            const progressBar = document.querySelector('.progress-bar');
+            
+            progress.style.display = 'block';
+            
+            reader.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                }
+            };
+            
+            reader.onload = (e) => {
+                fileContent = e.target.result;
+                progress.style.display = 'none';
+                showSuccess('File uploaded successfully');
+                checkProceedEnabled();
+            };
+            
+            reader.onerror = () => {
+                showError('Error reading file');
+                progress.style.display = 'none';
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Remove selected file
+        function removeFile() {
+            selectedFile = null;
+            fileContent = null;
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('shareCodeSection').style.display = 'none';
+            document.getElementById('shareCode').value = '';
+            document.getElementById('uploadStatus').innerHTML = '';
+            document.getElementById('fileInput').value = '';
+            
+            checkProceedEnabled();
+        }
+
+        // Toggle share code visibility
+        function toggleShareCodeVisibility() {
+            const input = document.getElementById('shareCode');
+            const icon = document.getElementById('toggleIcon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                icon.textContent = '👁️';
+            }
+        }
+
+        // Validate share code
+        function validateShareCode() {
+            const shareCode = document.getElementById('shareCode').value;
+            const errorDiv = document.getElementById('shareCodeError');
+            
+            if (!shareCode) {
+                errorDiv.textContent = 'Please enter share code';
+                return false;
+            }
+            
+            if (shareCode.length !== 4) {
+                errorDiv.textContent = 'Share code must be 4 digits';
+                return false;
+            }
+            
+            if (!/^\d{4}$/.test(shareCode)) {
+                errorDiv.textContent = 'Share code must contain only digits';
+                return false;
+            }
+            
+            errorDiv.textContent = '';
+            return true;
+        }
+
+        // Check if proceed button should be enabled
+        function checkProceedEnabled() {
+            const consentCheck = document.getElementById('consentCheck');
+            const proceedBtn = document.getElementById('proceedBtn');
+            
+            proceedBtn.disabled = !(
+                consentCheck.checked &&
+                selectedFile &&
+                fileContent &&
+                validateShareCode()
+            );
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Show error message
+        function showError(message) {
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = `<div class="alert alert-success">${message}</div>`;
+        }
+
+        // Proceed with offline KYC
+        function proceedWithOfflineKYC() {
+            if (!validateShareCode() || !fileContent) {
+                alert('Please complete all required steps');
+                return;
+            }
+            
+            const shareCode = document.getElementById('shareCode').value;
+            
+            // Show loading
+            const proceedBtn = document.getElementById('proceedBtn');
+            proceedBtn.disabled = true;
+            proceedBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+            
+            // Prepare authentication request
+            const authRequest = {
+                rid: requestData.rid || '',
+                authType: 'OFFLINE_KYC',
+                offlineXML: fileContent,
+                shareCode: shareCode
+            };
+            
+            // Submit authentication request
+            fetch('/api/v2/auth/offline-kyc', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(authRequest)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/esign/success?rid=' + requestData.rid;
+                } else {
+                    proceedBtn.disabled = false;
+                    proceedBtn.innerHTML = 'Verify & Proceed';
+                    showError('Authentication failed: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                proceedBtn.disabled = false;
+                proceedBtn.innerHTML = 'Verify & Proceed';
+                showError('An error occurred during authentication');
+            });
+        }
+
+        // Cancel request
+        function cancelRequest() {
+            if (confirm('Are you sure you want to cancel this request?')) {
+                const rid = requestData.rid || '';
+                window.location.href = '/api/v2/cancel?rid=' + rid + '&stage=offline-kyc';
+            }
+        }
+    </script>
+</body>
+</html>

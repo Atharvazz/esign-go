@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eSign - Iris Authentication</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .container-custom {
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+        .panel-primary {
+            border: 1px solid #0d6efd;
+            border-radius: 8px;
+        }
+        .panel-heading {
+            background-color: #0d6efd;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .panel-body {
+            padding: 2rem;
+        }
+        .consent-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .btn-primary {
+            background-color: #0d6efd;
+            border: none;
+            padding: 0.5rem 2rem;
+            margin: 0.5rem;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+            padding: 0.5rem 2rem;
+            margin: 0.5rem;
+        }
+        .error-msg {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .success-msg {
+            color: #198754;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .device-info {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .iris-icon {
+            width: 80px;
+            height: 80px;
+            margin: 1rem auto;
+            display: block;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        .iris-preview {
+            width: 200px;
+            height: 200px;
+            margin: 1rem auto;
+            border: 2px solid #0d6efd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+        }
+        footer {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container container-custom">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Protean Electronic Signature Service - Iris Authentication</div>
+            <div class="panel-body">
+                <!-- Transaction Info -->
+                <div class="text-center mb-4">
+                    <p><strong>{{.ASPName}}</strong> has requested to Digitally sign the document</p>
+                    <p>Transaction ID: <strong>{{.TransactionID}}</strong> dated <strong>{{.Timestamp}}</strong></p>
+                </div>
+
+                <!-- Consent Section -->
+                <div class="consent-box">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="consentCheck">
+                        <label class="form-check-label" for="consentCheck">
+                            I hereby authorize Protean eGov Technologies Limited to:
+                        </label>
+                    </div>
+                    <ol>
+                        <li>Use my Aadhaar/Virtual ID details for authentication through the Aadhaar Authentication system (Aadhaar based e-KYC services of UIDAI) in accordance with the provisions of the Aadhaar Act, 2016.</li>
+                        <li>Authenticate my Aadhaar/Virtual ID through Biometric (Iris) for authenticating my identity through the Aadhaar Authentication system.</li>
+                        <li>I understand that the security and confidentiality of personal identity data provided is ensured by Protean eGov Technologies Limited.</li>
+                    </ol>
+                </div>
+
+                <!-- Aadhaar/VID Input -->
+                <div class="row justify-content-center mb-4">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text">VID/Aadhaar:</span>
+                            <input type="password" class="form-control" id="aadhaarInput" 
+                                   placeholder="Enter VID/Aadhaar" maxlength="16" pattern="\d{12}|\d{16}">
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility()">
+                                <span id="toggleIcon">=A</span>
+                            </button>
+                        </div>
+                        <div id="aadhaarError" class="error-msg"></div>
+                    </div>
+                </div>
+
+                <!-- Biometric Section -->
+                <div class="device-info" id="biometricSection" style="display: none;">
+                    <h5 class="text-center mb-3">Iris Authentication</h5>
+                    
+                    <!-- Iris Icon -->
+                    <svg class="iris-icon" viewBox="0 0 24 24">
+                        <path fill="#0d6efd" d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5M3.18,12C4.83,8.87 8.21,6.5 12,6.5C15.79,6.5 19.17,8.87 20.82,12C19.17,15.13 15.79,17.5 12,17.5C8.21,17.5 4.83,15.13 3.18,12Z"/>
+                    </svg>
+
+                    <!-- Device Selection -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label>Select Device:</label>
+                            <select class="form-select" id="deviceSelect" onchange="onDeviceChange()">
+                                <option value="">-- Select Device --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Device Status:</label>
+                            <div id="deviceStatus" class="alert alert-info py-1">Not Connected</div>
+                        </div>
+                    </div>
+
+                    <!-- Eye Selection -->
+                    <div class="row mb-3">
+                        <div class="col-md-12 text-center">
+                            <label>Select Eye for Scanning:</label>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="eyeSelection" id="leftEye" value="left" checked>
+                                <label class="btn btn-outline-primary" for="leftEye">Left Eye</label>
+                                
+                                <input type="radio" class="btn-check" name="eyeSelection" id="rightEye" value="right">
+                                <label class="btn btn-outline-primary" for="rightEye">Right Eye</label>
+                                
+                                <input type="radio" class="btn-check" name="eyeSelection" id="bothEyes" value="both">
+                                <label class="btn btn-outline-primary" for="bothEyes">Both Eyes</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Iris Preview -->
+                    <div class="iris-preview" id="irisPreview">
+                        <span class="text-muted">Position eye here</span>
+                    </div>
+
+                    <!-- Capture Button -->
+                    <div class="text-center mt-3">
+                        <button class="btn btn-primary" onclick="captureIris()" id="captureBtn" disabled>
+                            Capture Iris
+                        </button>
+                    </div>
+
+                    <!-- Loading Spinner -->
+                    <div class="loading-spinner" id="loadingSpinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Capturing iris scan...</p>
+                    </div>
+
+                    <!-- Status Messages -->
+                    <div id="biometricStatus" class="mt-3"></div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-primary" onclick="proceedWithBiometric()" id="proceedBtn" disabled>
+                        Proceed
+                    </button>
+                    <button class="btn btn-secondary" onclick="cancelRequest()">
+                        Cancel
+                    </button>
+                </div>
+
+                <!-- Additional Links -->
+                <div class="text-center mt-3">
+                    <small>
+                        <a href="https://resident.uidai.gov.in/vid-generation" target="_blank">Click Here</a> to generate Virtual ID.
+                        <a href="#" target="_blank">Download Instructions</a> to generate Virtual ID in lieu of Aadhaar.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Please do not press "Submit" button once again or the "Refresh" or "Back" buttons.
+    </footer>
+
+    <script>
+        // Global variables
+        let requestData = {};
+        let deviceInfo = null;
+        let capturedBiometric = null;
+
+        // Parse request data from URL or session
+        window.onload = function() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const encodedData = urlParams.get('data');
+                if (encodedData) {
+                    requestData = JSON.parse(atob(encodedData));
+                }
+                
+                // Initialize device discovery
+                discoverDevices();
+            } catch (error) {
+                console.error('Error loading request data:', error);
+            }
+        };
+
+        // Toggle password visibility
+        function togglePasswordVisibility() {
+            const input = document.getElementById('aadhaarInput');
+            const icon = document.getElementById('toggleIcon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = '=H';
+            } else {
+                input.type = 'password';
+                icon.textContent = '=A';
+            }
+        }
+
+        // Validate Aadhaar/VID
+        function validateAadhaar() {
+            const input = document.getElementById('aadhaarInput');
+            const errorDiv = document.getElementById('aadhaarError');
+            const value = input.value.replace(/\s/g, '');
+            
+            if (!value) {
+                errorDiv.textContent = 'Please enter Aadhaar/VID';
+                return false;
+            }
+            
+            if (value.length !== 12 && value.length !== 16) {
+                errorDiv.textContent = 'Enter valid 12-digit Aadhaar or 16-digit VID';
+                return false;
+            }
+            
+            if (!/^\d+$/.test(value)) {
+                errorDiv.textContent = 'Only digits are allowed';
+                return false;
+            }
+            
+            errorDiv.textContent = '';
+            return true;
+        }
+
+        // Check consent and show biometric section
+        document.getElementById('consentCheck').addEventListener('change', function() {
+            const biometricSection = document.getElementById('biometricSection');
+            const proceedBtn = document.getElementById('proceedBtn');
+            
+            if (this.checked && validateAadhaar()) {
+                biometricSection.style.display = 'block';
+                checkProceedEnabled();
+            } else {
+                biometricSection.style.display = 'none';
+                proceedBtn.disabled = true;
+            }
+        });
+
+        document.getElementById('aadhaarInput').addEventListener('input', function() {
+            const consentCheck = document.getElementById('consentCheck');
+            if (consentCheck.checked) {
+                const biometricSection = document.getElementById('biometricSection');
+                if (validateAadhaar()) {
+                    biometricSection.style.display = 'block';
+                } else {
+                    biometricSection.style.display = 'none';
+                }
+            }
+            checkProceedEnabled();
+        });
+
+        // Device discovery (mock for now - real implementation would use RD service)
+        function discoverDevices() {
+            // In real implementation, this would call the RD service discovery endpoint
+            // For now, we'll mock it
+            setTimeout(() => {
+                const deviceSelect = document.getElementById('deviceSelect');
+                deviceSelect.innerHTML = `
+                    <option value="">-- Select Device --</option>
+                    <option value="mock-iris-1">Mock Iris Scanner 1</option>
+                    <option value="mock-iris-2">Mock Iris Scanner 2</option>
+                `;
+            }, 1000);
+        }
+
+        // Handle device selection
+        function onDeviceChange() {
+            const deviceSelect = document.getElementById('deviceSelect');
+            const deviceStatus = document.getElementById('deviceStatus');
+            const captureBtn = document.getElementById('captureBtn');
+            
+            if (deviceSelect.value) {
+                deviceStatus.textContent = 'Connected';
+                deviceStatus.className = 'alert alert-success py-1';
+                captureBtn.disabled = false;
+                deviceInfo = { id: deviceSelect.value, name: deviceSelect.options[deviceSelect.selectedIndex].text };
+            } else {
+                deviceStatus.textContent = 'Not Connected';
+                deviceStatus.className = 'alert alert-info py-1';
+                captureBtn.disabled = true;
+                deviceInfo = null;
+            }
+            checkProceedEnabled();
+        }
+
+        // Get selected eye(s)
+        function getSelectedEye() {
+            const eyeSelection = document.querySelector('input[name="eyeSelection"]:checked');
+            return eyeSelection ? eyeSelection.value : 'left';
+        }
+
+        // Capture iris
+        function captureIris() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const biometricStatus = document.getElementById('biometricStatus');
+            const captureBtn = document.getElementById('captureBtn');
+            const irisPreview = document.getElementById('irisPreview');
+            
+            loadingSpinner.style.display = 'block';
+            captureBtn.disabled = true;
+            
+            // Mock iris capture - in real implementation, this would call RD service
+            setTimeout(() => {
+                loadingSpinner.style.display = 'none';
+                captureBtn.disabled = false;
+                
+                const selectedEye = getSelectedEye();
+                
+                // Mock captured data
+                capturedBiometric = {
+                    deviceId: deviceInfo.id,
+                    timestamp: new Date().toISOString(),
+                    quality: 92,
+                    eyeType: selectedEye,
+                    data: 'mock-iris-data-base64'
+                };
+                
+                // Update preview
+                irisPreview.innerHTML = '<span class="text-success"> Captured</span>';
+                irisPreview.style.backgroundColor = '#d4edda';
+                
+                biometricStatus.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>Iris scan captured successfully!</strong><br>
+                        Eye: ${selectedEye.charAt(0).toUpperCase() + selectedEye.slice(1)}<br>
+                        Quality Score: ${capturedBiometric.quality}%
+                    </div>
+                `;
+                
+                checkProceedEnabled();
+            }, 3000);
+        }
+
+        // Check if proceed button should be enabled
+        function checkProceedEnabled() {
+            const consentCheck = document.getElementById('consentCheck');
+            const proceedBtn = document.getElementById('proceedBtn');
+            
+            proceedBtn.disabled = !(
+                consentCheck.checked &&
+                validateAadhaar() &&
+                deviceInfo &&
+                capturedBiometric
+            );
+        }
+
+        // Proceed with biometric authentication
+        function proceedWithBiometric() {
+            if (!validateAadhaar() || !capturedBiometric) {
+                alert('Please complete all required steps');
+                return;
+            }
+            
+            const aadhaar = document.getElementById('aadhaarInput').value.replace(/\s/g, '');
+            
+            // Prepare authentication request
+            const authRequest = {
+                rid: parseInt(requestData.rid) || 0,
+                uid: aadhaar,
+                authType: 'BIOMETRIC_IRIS',
+                biometricData: capturedBiometric,
+                deviceInfo: deviceInfo
+            };
+            
+            // Submit authentication request
+            fetch('/api/v2/auth/biometric', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(authRequest)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/esign/success?rid=' + requestData.rid;
+                } else {
+                    alert('Authentication failed: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during authentication');
+            });
+        }
+
+        // Cancel request
+        function cancelRequest() {
+            if (confirm('Are you sure you want to cancel this request?')) {
+                const rid = requestData.rid || '';
+                window.location.href = '/api/v2/cancel?rid=' + rid + '&stage=biometric';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+🚀 Mock Callback Server starting on http://localhost:8091
+📝 Callback endpoint: http://localhost:8091/callback
+💚 Health check: http://localhost:8091/health
+
+Waiting for callbacks...
+
+
+[32m=============== CALLBACK RECEIVED ===============[0m
+Time: 2025-06-10 16:55:13
+Method: POST
+URL: /callback
+
+Headers:
+  User-Agent: [curl/8.7.1]
+  Accept: [*/*]
+  Content-Type: [application/json]
+  Content-Length: [200]
+
+Body:
+{
+  "status": "success",
+  "rid": "123456789",
+  "uid": "123456789012",
+  "transactionId": "TXN-1749554713",
+  "signedDocument": "base64_encoded_document_here",
+  "timestamp": "2025-06-10T11:25:13Z"
+}
+
+Parsed JSON:
+{
+  "rid": "123456789",
+  "signedDocument": "base64_encoded_document_here",
+  "status": "success",
+  "timestamp": "2025-06-10T11:25:13Z",
+  "transactionId": "TXN-1749554713",
+  "uid": "123456789012"
+}
+[32m=================================================[0m
+

@@ -139,7 +139,7 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    rid: requestData.rid,
+                    rid: parseInt(requestData.rid),
                     uid: aadhaar
                 })
             })
@@ -181,7 +181,7 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    rid: requestData.rid,
+                    rid: parseInt(requestData.rid),
                     otpTxn: otpTxn,
                     otp: otp,
                     uid: aadhaar

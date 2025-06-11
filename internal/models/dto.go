@@ -209,6 +209,8 @@ type Template struct {
 }
 
 // Config represents application configuration
+// NOTE: Config has been moved to internal/config package to avoid conflicts
+/*
 type Config struct {
 	Server struct {
 		Port         int    `yaml:"port"`
@@ -232,7 +234,7 @@ type Config struct {
 	Redis struct {
 		Host        string `yaml:"host"`
 		Port        int    `yaml:"port"`
-		Password    string `yaml:"password"`
+		Password     string `yaml:"password"`
 		DB          int    `yaml:"db"`
 		MaxRetries  int    `yaml:"maxRetries"`
 		PoolSize    int    `yaml:"poolSize"`
@@ -286,7 +288,7 @@ type Config struct {
 
 	BiometricEnv         string   `yaml:"biometricEnv"`
 	BiometricResponseURL string   `yaml:"biometricResponseUrl"`
-	ConsentText          string   `yaml:"consentText"`
+		ConsentText          string   `yaml:"consentText"`
 	AuthAttempts         int      `yaml:"authAttempts"`
 	OTPRetryAttempts     int      `yaml:"otpRetryAttempts"`
 	Build                string   `yaml:"build"`
@@ -294,6 +296,7 @@ type Config struct {
 	RequestTimeout       int      `yaml:"requestTimeout"`
 	CheckStatusASPs      []string `yaml:"checkStatusAsps"`
 }
+*/
 
 // RateLimitConfig represents rate limiting configuration
 type RateLimitConfig struct {
@@ -686,4 +689,45 @@ type FaceRecognitionResult struct {
 	Success bool   `json:"success"`
 	Status  string `json:"status"`
 	Message string `json:"message"`
+}
+
+// SendOTPAPIRequest represents modern API request for sending OTP
+type SendOTPAPIRequest struct {
+	RID     int64  `json:"rid" binding:"required"`
+	UID     string `json:"uid" binding:"required,len=12|len=16"`
+	AspID   string `json:"aspId,omitempty"`
+}
+
+// VerifyOTPAPIRequest represents modern API request for verifying OTP
+type VerifyOTPAPIRequest struct {
+	RID     int64  `json:"rid" binding:"required"`
+	UID     string `json:"uid" binding:"required,len=12|len=16"`
+	OtpTxn  string `json:"otpTxn" binding:"required"`
+	OTP     string `json:"otp" binding:"required,len=6"`
+	AspID   string `json:"aspId,omitempty"`
+}
+
+// BiometricAuthAPIRequest represents modern API request for biometric auth
+type BiometricAuthAPIRequest struct {
+	RID           int64                  `json:"rid" binding:"required"`
+	UID           string                 `json:"uid" binding:"required,len=12|len=16"`
+	AuthType      string                 `json:"authType" binding:"required,oneof=BIOMETRIC_FP BIOMETRIC_IRIS"`
+	BiometricData map[string]interface{} `json:"biometricData" binding:"required"`
+	DeviceInfo    map[string]interface{} `json:"deviceInfo" binding:"required"`
+}
+
+// OfflineKYCAPIRequest represents modern API request for offline KYC
+type OfflineKYCAPIRequest struct {
+	RID         int64  `json:"rid" binding:"required"`
+	AuthType    string `json:"authType" binding:"required,eq=OFFLINE_KYC"`
+	OfflineXML  string `json:"offlineXML" binding:"required"`
+	ShareCode   string `json:"shareCode" binding:"required,len=4"`
+}
+
+// APIResponse represents a generic API response
+type APIResponse struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+	Error   string      `json:"error,omitempty"`
 }

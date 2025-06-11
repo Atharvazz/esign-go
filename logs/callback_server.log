@@ -1,0 +1,6 @@
+🚀 Mock Callback Server starting on http://localhost:8091
+📝 Callback endpoint: http://localhost:8091/callback
+💚 Health check: http://localhost:8091/health
+
+Waiting for callbacks...
+

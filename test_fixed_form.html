@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick eSign Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .xml-preview { background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 15px 0; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h1>Quick eSign Test Form</h1>
+    
+    <form id="esignForm" action="http://localhost:8080/authenticate/esign-doc" method="POST" target="_blank">
+        <div class="form-group">
+            <label>ASP ID:</label>
+            <input type="text" id="aspId" value="TEST001" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Transaction ID:</label>
+            <input type="text" id="txnId" value="TEST-1749558000000" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Authentication Mode:</label>
+            <select id="authMode" required>
+                <option value="1" selected>OTP (One Time Password)</option>
+                <option value="2">Fingerprint Biometric</option>
+                <option value="3">Iris Biometric</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Aadhaar Number:</label>
+            <input type="text" id="ekycId" value="999999990019" pattern="[0-9]{12}" maxlength="12" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Callback URL:</label>
+            <input type="text" id="responseUrl" value="http://localhost:8091/callback" required>
+        </div>
+        
+        <button type="button" onclick="generateXML()">Generate XML Preview</button>
+        
+        <div class="xml-preview" id="xmlPreview" style="display: none;">
+            <h3>Generated XML:</h3>
+            <pre id="xmlContent"></pre>
+        </div>
+        
+        <input type="hidden" name="msg" id="xmlMessage">
+        
+        <div style="margin-top: 20px;">
+            <button type="submit" id="submitBtn" disabled>Submit eSign Request</button>
+        </div>
+    </form>
+
+    <script>
+        function generateXML() {
+            const timestamp = new Date().toISOString();
+            const aspId = document.getElementById('aspId').value;
+            const txnId = document.getElementById('txnId').value;
+            const authMode = document.getElementById('authMode').value;
+            const ekycId = document.getElementById('ekycId').value;
+            const responseUrl = document.getElementById('responseUrl').value;
+            
+            const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Esign ver="2.1" sc="Y" ts="${timestamp}" txn="${txnId}" ekycIdType="A" ekycId="${ekycId}" aspId="${aspId}" AuthMode="${authMode}" responseSigType="pkcs7" responseUrl="${responseUrl}">
+    <Docs>
+        <InputHash id="1" hashAlgorithm="SHA256" docInfo="Test Document">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</InputHash>
+    </Docs>
+</Esign>`;
+            
+            document.getElementById('xmlContent').textContent = xml;
+            document.getElementById('xmlMessage').value = xml;
+            document.getElementById('xmlPreview').style.display = 'block';
+            document.getElementById('submitBtn').disabled = false;
+        }
+        
+        // Generate XML on page load
+        window.onload = function() {
+            generateXML();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+2025/06/10 16:47:36 Starting test server with direct connection...
+2025/06/10 16:47:36 Connection string: host=localhost port=5432 user=atharvaz dbname=esign_db sslmode=disable
+2025/06/10 16:47:36 ✓ Database connected successfully!
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+panic: read templates/custom-asp: is a directory
+
+goroutine 1 [running]:
+html/template.Must(...)
+	/usr/local/go/src/html/template/template.go:368
+github.com/gin-gonic/gin.(*Engine).LoadHTMLGlob(0x140002b0000, {0x102f5d728, 0xb})
+	/Users/atharvaz/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/gin.go:263 +0x284
+main.main()
+	/Users/atharvaz/Documents/ESIGN_FINAL/esign-go/test_server2.go:45 +0x2a8
+exit status 2

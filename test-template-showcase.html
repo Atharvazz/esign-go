@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eSign Template Showcase</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .status {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        .status .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .card p {
+            color: #666;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        .card a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .card a:hover {
+            background: #0056b3;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section h2 {
+            color: #444;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .test-info {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .test-info h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .test-info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .callback-info {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .endpoint {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 eSign Go - Template Showcase</h1>
+        <div class="status">
+            Services Status: 
+            <span class="success">✅ Main Server (8090)</span> | 
+            <span class="success">✅ Callback Server (8091)</span>
+        </div>
+
+        <div class="test-info">
+            <h3>🧪 Test Environment Ready</h3>
+            <p><strong>Main Server:</strong> <span class="endpoint">http://localhost:8090</span></p>
+            <p><strong>Callback Server:</strong> <span class="endpoint">http://localhost:8091</span></p>
+            <p><strong>Test Form:</strong> <a href="http://localhost:8090/test-esign-form.html">Open Test Form</a></p>
+            <div class="callback-info">
+                <strong>📮 Callback URL for Testing:</strong> <span class="endpoint">http://localhost:8091/callback</span>
+                <br><small>Use this URL in your eSign requests. All callbacks will be logged in the terminal.</small>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Authentication Templates</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>OTP Authentication</h3>
+                    <p>Standard OTP-based authentication flow for Aadhaar verification.</p>
+                    <a href="http://localhost:8090/test?authMode=otp">View Template</a>
+                </div>
+                <div class="card">
+                    <h3>Enhanced OTP (UX)</h3>
+                    <p>Modern UI with improved user experience for OTP authentication.</p>
+                    <a href="http://localhost:8090/test?authMode=otp&ux=enhanced">View Enhanced</a>
+                </div>
+                <div class="card">
+                    <h3>Fingerprint Biometric</h3>
+                    <p>Fingerprint-based biometric authentication with device integration.</p>
+                    <a href="http://localhost:8090/test?authMode=biometric&type=fingerprint">View Template</a>
+                </div>
+                <div class="card">
+                    <h3>Iris Biometric</h3>
+                    <p>Iris scan authentication with left/right eye selection.</p>
+                    <a href="http://localhost:8090/test?authMode=biometric&type=iris">View Template</a>
+                </div>
+                <div class="card">
+                    <h3>Offline KYC</h3>
+                    <p>Offline KYC verification using XML upload and share code.</p>
+                    <a href="http://localhost:8090/test?authMode=offline_kyc">View Template</a>
+                </div>
+                <div class="card">
+                    <h3>Online KYC (OKYC)</h3>
+                    <p>Online KYC authentication flow with real-time verification.</p>
+                    <a href="http://localhost:8090/test?authMode=okyc">View Template</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Custom ASP Templates</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>HDFC Bank</h3>
+                    <p>Customized authentication page with HDFC branding.</p>
+                    <a href="http://localhost:8090/test?aspId=HDFC">View HDFC Template</a>
+                </div>
+                <div class="card">
+                    <h3>Karnataka Government</h3>
+                    <p>Multi-language support with Kannada translations.</p>
+                    <a href="http://localhost:8090/test?aspId=KGOV">View KGov Template</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Testing Tools</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>API Test Endpoint</h3>
+                    <p>Test the API directly with JSON requests.</p>
+                    <p><strong>Endpoint:</strong> <span class="endpoint">POST /api/test</span></p>
+                    <p>Example: <code>{"rid": 12345, "uid": "123456789012"}</code></p>
+                </div>
+                <div class="card">
+                    <h3>Health Check</h3>
+                    <p>Verify service health and database connectivity.</p>
+                    <a href="http://localhost:8090/health" target="_blank">Check Health</a>
+                </div>
+                <div class="card">
+                    <h3>Callback Monitor</h3>
+                    <p>View callback server status and recent callbacks.</p>
+                    <a href="http://localhost:8091/" target="_blank">Open Monitor</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Quick Test Scripts</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Frontend Flow Test</h3>
+                    <p>Run: <code>./test_frontend_flow.sh</code></p>
+                    <p>Tests all endpoints and verifies service health.</p>
+                </div>
+                <div class="card">
+                    <h3>eSign Simulation</h3>
+                    <p>Run: <code>./test_esign_simulation.sh</code></p>
+                    <p>Simulates complete eSign flow with callbacks.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check service health on load
+        fetch('http://localhost:8090/health')
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'healthy') {
+                    console.log('✅ Main server is healthy:', data);
+                }
+            })
+            .catch(err => console.error('Main server health check failed:', err));
+
+        fetch('http://localhost:8091/health')
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'healthy') {
+                    console.log('✅ Callback server is healthy:', data);
+                }
+            })
+            .catch(err => console.error('Callback server health check failed:', err));
+    </script>
+</body>
+</html>

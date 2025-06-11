@@ -159,6 +159,7 @@ type SessionData struct {
 	OtpTxn           string                 `json:"otpTxn"`
 	RetryCount       int                    `json:"retryCount"`
 	CreatedAt        time.Time              `json:"createdAt"`
+	BiometricEnv     string                 `json:"bioEnv"`
 	Extra            map[string]interface{} `json:"extra"`
 }
 
@@ -186,6 +187,7 @@ func (s *SessionService) StoreSessionData(c *gin.Context, data *SessionData) err
 		"filler3":   data.Filler3,
 		"filler4":   data.Filler4,
 		"filler5":   data.Filler5,
+		"bioEnv":    data.BiometricEnv,
 	}
 
 	// Store each field
@@ -275,6 +277,10 @@ func (s *SessionService) GetSessionData(c *gin.Context) (*SessionData, error) {
 
 	if adr := s.Get(c, "adr"); adr != nil {
 		data.Adr, _ = adr.(string)
+	}
+
+	if bioEnv := s.Get(c, "bioEnv"); bioEnv != nil {
+		data.BiometricEnv, _ = bioEnv.(string)
 	}
 
 	return data, nil

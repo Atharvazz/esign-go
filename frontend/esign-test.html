@@ -211,7 +211,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">Response URL</label>
                                     <input type="text" class="form-control" id="responseUrl" 
-                                           value="http://localhost:8090/callback">
+                                           value="http://localhost:8091/callback">
                                     <small class="text-muted">URL to receive signed response</small>
                                 </div>
                             </div>
@@ -306,7 +306,7 @@
                         </div>
 
                         <!-- Hidden fields for form submission -->
-                        <input type="hidden" name="eSignRequest" id="eSignRequest">
+                        <input type="hidden" name="msg" id="eSignRequest">
                         <input type="hidden" name="Content-Type" value="application/xml">
 
                         <div class="d-flex justify-content-between">
@@ -400,8 +400,13 @@
                 }
             } else if (step === 2) {
                 if (documents.length === 0) {
-                    alert('Please add at least one document');
-                    return false;
+                    // Add a default document if none added
+                    documents.push({
+                        id: 1,
+                        info: "Test Document",
+                        hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    });
+                    updateDocumentList();
                 }
             }
             
@@ -480,7 +485,7 @@
         }
 
         function generatePreview() {
-            const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, '');
+            const timestamp = new Date().toISOString();
             const aspId = document.getElementById('aspId').value;
             const txnId = document.getElementById('txnId').value;
             const authMode = document.getElementById('authMode').value;
@@ -490,16 +495,10 @@
             
             // Generate XML
             const docsXml = documents.map(doc => `
-        <InputHash id="${doc.id}" hashAlgorithm="SHA256" docInfo="${doc.info}">
-            ${doc.hash}
-        </InputHash>`).join('');
+        <InputHash id="${doc.id}" hashAlgorithm="SHA256" docInfo="${doc.info}">${doc.hash}</InputHash>`).join('');
             
             const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<Esign ver="2.1" sc="Y" ts="${timestamp}" txn="${txnId}" 
-       ekycIdType="${ekycIdType}" ekycId="${ekycId}" aspId="${aspId}" 
-       AuthMode="${authMode}" responseSigType="pkcs7" 
-       preVerified="n" organizationFlag="n" 
-       responseUrl="${responseUrl}">
+<Esign ver="2.1" sc="Y" ts="${timestamp}" txn="${txnId}" ekycIdType="${ekycIdType}" ekycId="${ekycId}" aspId="${aspId}" AuthMode="${authMode}" responseSigType="pkcs7" responseUrl="${responseUrl}">
     <Docs>${docsXml}
     </Docs>
 </Esign>`;
@@ -520,8 +519,8 @@
             `;
             document.getElementById('requestSummary').innerHTML = summary;
             
-            // Set base64 encoded request
-            document.getElementById('eSignRequest').value = btoa(xml);
+            // Set XML request (server expects plain XML, not base64)
+            document.getElementById('eSignRequest').value = xml;
         }
 
         // Enable submit button when confirmed

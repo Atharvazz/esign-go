@@ -9,132 +9,142 @@ import (
 
 // Config holds all configuration for our application
 type Config struct {
-	App         AppConfig
-	Server      ServerConfig
-	Database    DatabaseConfig
-	Security    SecurityConfig
-	UIDAI       UIDAIConfig
-	Templates   TemplateConfig
-	RateLimit   RateLimitConfig
-	CORS        CORSConfig
-	Logging     LoggingConfig
-	Debug       DebugConfig
-	Biometric   BiometricConfig
-	Auth        AuthConfig
-	CheckStatus CheckStatusConfig
+	App                  AppConfig         `mapstructure:"app"`
+	Server               ServerConfig      `mapstructure:"server"`
+	Database             DatabaseConfig    `mapstructure:"database"`
+	Security             SecurityConfig    `mapstructure:"security"`
+	UIDAI                UIDAIConfig       `mapstructure:"uidai"`
+	Templates            TemplateConfig    `mapstructure:"templates"`
+	RateLimit            RateLimitConfig   `mapstructure:"rateLimit"`
+	CORS                 CORSConfig        `mapstructure:"cors"`
+	Logging              LoggingConfig     `mapstructure:"logging"`
+	Debug                DebugConfig       `mapstructure:"debug"`
+	Biometric            BiometricConfig   `mapstructure:"biometric"`
+	Auth                 AuthConfig        `mapstructure:"auth"`
+	CheckStatus          CheckStatusConfig `mapstructure:"checkStatus"`
+	RequestTimeout       int               `mapstructure:"requestTimeout"`
+	Build                string            `mapstructure:"build"`
+	BiometricEnv         string            `mapstructure:"biometricEnv"`
+	BiometricResponseURL string            `mapstructure:"biometricResponseUrl"`
+	ConsentText          string            `mapstructure:"consentText"`
+	AuthAttempts         int               `mapstructure:"authAttempts"`
 }
 
 type AppConfig struct {
-	Name        string
-	Environment string
-	Build       string
-	Debug       bool
+	Name        string `mapstructure:"name"`
+	Environment string `mapstructure:"environment"`
+	Build       string `mapstructure:"build"`
+	Debug       bool   `mapstructure:"debug"`
 }
 
 type ServerConfig struct {
-	Address        string
-	ReadTimeout    time.Duration
-	WriteTimeout   time.Duration
-	IdleTimeout    time.Duration
-	Version        string
-	Environment    string
-	RequestTimeout int
+	Address        string        `mapstructure:"address"`
+	ReadTimeout    time.Duration `mapstructure:"readTimeout"`
+	WriteTimeout   time.Duration `mapstructure:"writeTimeout"`
+	IdleTimeout    time.Duration `mapstructure:"idleTimeout"`
+	Version        string        `mapstructure:"version"`
+	Environment    string        `mapstructure:"environment"`
+	RequestTimeout int           `mapstructure:"requestTimeout"`
 }
 
 type DatabaseConfig struct {
-	Host         string
-	Port         int
-	User         string
-	Password     string
-	DBName       string
-	SSLMode      string
-	MaxOpenConns int
-	MaxIdleConns int
-	MaxLifetime  time.Duration
+	Host         string        `mapstructure:"host"`
+	Port         int           `mapstructure:"port"`
+	User         string        `mapstructure:"user"`
+	Password     string        `mapstructure:"password"`
+	DBName       string        `mapstructure:"dbname"`
+	SSLMode      string        `mapstructure:"sslmode"`
+	MaxOpenConns int           `mapstructure:"maxopenconns"`
+	MaxIdleConns int           `mapstructure:"maxidleconns"`
+	MaxLifetime  time.Duration `mapstructure:"maxlifetime"`
 }
 
 type SecurityConfig struct {
-	JWTSecret            string
-	SigningCertPath      string
-	SigningKeyPath       string
-	EncryptionCertPath   string
-	EncryptionKeyPath    string
-	TrustedCertsPath     string
-	PasswordSalt         string
-	SessionTimeout       time.Duration
-	MaxAuthAttempts      int
+	JWTSecret            string        `mapstructure:"jwtSecret"`
+	SigningCertPath      string        `mapstructure:"signingCertPath"`
+	SigningKeyPath       string        `mapstructure:"signingKeyPath"`
+	EncryptionCertPath   string        `mapstructure:"encryptionCertPath"`
+	EncryptionKeyPath    string        `mapstructure:"encryptionKeyPath"`
+	TrustedCertsPath     string        `mapstructure:"trustedCertsPath"`
+	PasswordSalt         string        `mapstructure:"passwordSalt"`
+	SessionTimeout       time.Duration `mapstructure:"sessionTimeout"`
+	MaxAuthAttempts      int           `mapstructure:"maxAuthAttempts"`
+	MaxXMLSize           int64         `mapstructure:"maxXMLSize"`
 }
 
 type UIDAIConfig struct {
-	AuthURL          string
-	OTPAuthURL       string
-	EKYCAuthURL      string
-	BiometricEnv     string
-	LicenseKey       string
-	SubAUA           string
-	AuthVersion      string
-	Timeout          time.Duration
+	AuthURL          string        `mapstructure:"authURL"`
+	OTPAuthURL       string        `mapstructure:"otpAuthURL"`
+	EKYCAuthURL      string        `mapstructure:"ekycAuthURL"`
+	BiometricEnv     string        `mapstructure:"biometricEnv"`
+	LicenseKey       string        `mapstructure:"licenseKey"`
+	SubAUA           string        `mapstructure:"subAUA"`
+	AuthVersion      string        `mapstructure:"authVersion"`
+	Timeout          time.Duration `mapstructure:"timeout"`
+	PrivateKey       string        `mapstructure:"privateKey"`
+	Certificate      string        `mapstructure:"certificate"`
+	PublicKey        string        `mapstructure:"publicKey"`
 }
 
 type TemplateConfig struct {
-	Path           string
-	CacheTemplates bool
+	Path           string `mapstructure:"path"`
+	CacheTemplates bool   `mapstructure:"cacheTemplates"`
 }
 
 type RateLimitConfig struct {
-	Enabled     bool
-	EsignDoc    RateLimitRule
-	OTP         RateLimitRule
-	Default     RateLimitRule
-	CheckStatus RateLimitRule
+	Enabled     bool          `mapstructure:"enabled"`
+	EsignDoc    RateLimitRule `mapstructure:"esignDoc"`
+	OTP         RateLimitRule `mapstructure:"otp"`
+	Default     RateLimitRule `mapstructure:"default"`
+	CheckStatus RateLimitRule `mapstructure:"checkStatus"`
 }
 
 type RateLimitRule struct {
-	Rate     int
-	Burst    int
-	Duration time.Duration
-	Period   time.Duration
+	Rate     int           `mapstructure:"rate"`
+	Burst    int           `mapstructure:"burst"`
+	Duration time.Duration `mapstructure:"duration"`
+	Period   time.Duration `mapstructure:"period"`
 }
 
 type CORSConfig struct {
-	AllowedOrigins   []string
-	AllowedMethods   []string
-	AllowedHeaders   []string
-	ExposedHeaders   []string
-	AllowCredentials bool
-	MaxAge           time.Duration
+	AllowedOrigins   []string      `mapstructure:"allowedOrigins"`
+	AllowedMethods   []string      `mapstructure:"allowedMethods"`
+	AllowedHeaders   []string      `mapstructure:"allowedHeaders"`
+	ExposedHeaders   []string      `mapstructure:"exposedHeaders"`
+	AllowCredentials bool          `mapstructure:"allowCredentials"`
+	MaxAge           time.Duration `mapstructure:"maxAge"`
 }
 
 type LoggingConfig struct {
-	Level           string
-	Format          string
-	OutputPath      string
-	ErrorOutputPath string
-	RequestLogging  bool
-	XMLLogging      bool
+	Level           string `mapstructure:"level"`
+	Format          string `mapstructure:"format"`
+	OutputPath      string `mapstructure:"outputPath"`
+	ErrorOutputPath string `mapstructure:"errorOutputPath"`
+	RequestLogging  bool   `mapstructure:"requestLogging"`
+	XMLLogging      bool   `mapstructure:"xmlLogging"`
 }
 
 type DebugConfig struct {
-	LogRequests   bool
-	LogResponses  bool
-	PrettyPrint   bool
-	SkipXMLVerify bool
+	LogRequests   bool `mapstructure:"logRequests"`
+	LogResponses  bool `mapstructure:"logResponses"`
+	PrettyPrint   bool `mapstructure:"prettyPrint"`
+	SkipXMLVerify bool `mapstructure:"skipXMLVerify"`
 }
 
 type BiometricConfig struct {
-	Environment  string
-	ResponseURL  string
-	ConsentText  string
+	Environment  string `mapstructure:"environment"`
+	ResponseURL  string `mapstructure:"responseURL"`
+	ConsentText  string `mapstructure:"consentText"`
 }
 
 type AuthConfig struct {
-	MaxAttempts      int
-	OTPRetryAttempts int
-	SessionTimeout   int
+	MaxAttempts      int `mapstructure:"maxAttempts"`
+	OTPRetryAttempts int `mapstructure:"otpRetryAttempts"`
+	SessionTimeout   int `mapstructure:"sessionTimeout"`
 }
 
 type CheckStatusConfig struct {
-	AllowedASPs []string
+	AllowedASPs []string `mapstructure:"allowedASPs"`
 }
 
 // Load loads configuration from file and environment variables
@@ -176,6 +186,9 @@ func setDefaults() {
 	viper.SetDefault("app.build", "1.0.0")
 	viper.SetDefault("app.debug", false)
 	
+	// Request timeout default
+	viper.SetDefault("requestTimeout", 30)
+	
 	// Server defaults
 	viper.SetDefault("server.address", ":8080")
 	viper.SetDefault("server.readTimeout", "30s")
@@ -194,6 +207,7 @@ func setDefaults() {
 	// Security defaults
 	viper.SetDefault("security.sessionTimeout", "30m")
 	viper.SetDefault("security.maxAuthAttempts", 3)
+	viper.SetDefault("security.maxXMLSize", 10485760) // 10MB
 	
 	// Rate limit defaults
 	viper.SetDefault("rateLimit.enabled", true)

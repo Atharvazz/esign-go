@@ -13,7 +13,6 @@ import (
 	"github.com/esign-go/internal/config"
 	"github.com/esign-go/internal/controller"
 	"github.com/esign-go/internal/middleware"
-	"github.com/esign-go/internal/models"
 	"github.com/esign-go/internal/repository"
 	"github.com/esign-go/internal/service"
 	"github.com/esign-go/pkg/logger"
@@ -96,36 +95,9 @@ func main() {
 		remoteSigningService = &service.RemoteSigningService{}
 	}
 	
-	// Convert config.Config to models.Config
-	modelConfig := &models.Config{
-		BiometricEnv:         cfg.Biometric.Environment,
-		BiometricResponseURL: cfg.Biometric.ResponseURL,
-		ConsentText:          cfg.Biometric.ConsentText,
-		AuthAttempts:         cfg.Auth.MaxAttempts,
-		OTPRetryAttempts:     cfg.Auth.OTPRetryAttempts,
-		Build:                cfg.Server.Version,
-		Environment:          cfg.Server.Environment,
-		RequestTimeout:       cfg.Server.RequestTimeout,
-		CheckStatusASPs:      cfg.CheckStatus.AllowedASPs,
-	}
-	
-	// Set RateLimit struct
-	modelConfig.RateLimit.EsignDoc = cfg.RateLimit.EsignDoc.Rate
-	modelConfig.RateLimit.CheckStatus = cfg.RateLimit.CheckStatus.Rate
-	modelConfig.RateLimit.Enabled = cfg.RateLimit.Enabled
-	modelConfig.RateLimit.WindowSize = 60
-	modelConfig.RateLimit.FallbackEnabled = false
-	
-	// Set Debug struct
-	modelConfig.Debug.LogLevel = "debug"
-	modelConfig.Debug.LogRequests = true
-	modelConfig.Debug.LogResponses = true
-	
-	// Set Security struct
-	modelConfig.Security.MaxXMLSize = 100 * 1024 // 100KB
-	
-	esignService := service.NewEsignService(esignRepo, aspRepo, xmlValidator, cryptoService, remoteSigningService, remoteSigningService, modelConfig)
-	kycService := service.NewKYCService(modelConfig, cryptoService)
+	// Use the loaded config directly
+	esignService := service.NewEsignService(esignRepo, aspRepo, xmlValidator, cryptoService, remoteSigningService, remoteSigningService, cfg)
+	kycService := service.NewKYCService(cfg, cryptoService)
 	
 	// Create session service
 	sessionService := service.NewSessionService(nil, "esign", 3600)
@@ -157,9 +129,9 @@ func main() {
 	router.Static("/static", "./static")
 	
 	// Load templates with better error handling
-	// Use absolute path to templates directory
-	projectRoot := filepath.Join(cwd, "..", "..")
-	templatesPath := filepath.Join(projectRoot, "templates", "*")
+	// Templates are in the project root
+	projectRoot := cwd
+	templatesPath := filepath.Join(projectRoot, "templates", "*.html")
 	log.Printf("Loading templates from: %s", templatesPath)
 	
 	// Check if templates directory exists
@@ -182,7 +154,7 @@ func main() {
 	router.LoadHTMLGlob(templatesPath)
 
 	// Initialize controllers
-	authController := controller.NewAuthenticateController(esignService, kycService, templateService, sessionService, modelConfig)
+	authController := controller.NewAuthenticateController(esignService, kycService, templateService, sessionService, cfg)
 
 	// Routes
 	api := router.Group("/authenticate")

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/beevik/etree"
+	"github.com/esign-go/internal/config"
 	"github.com/esign-go/internal/models"
 	"github.com/esign-go/internal/repository"
 	"github.com/esign-go/pkg/errors"
@@ -47,7 +48,7 @@ type EsignService struct {
 	cryptoService  ICryptoService
 	remoteService  IRemoteSigningService
 	signingService IRemoteSigningService
-	config         *models.Config
+	config         *config.Config
 	errorCodes     map[string]*models.ErrorCode
 }
 
@@ -59,7 +60,7 @@ func NewEsignService(
 	cryptoService ICryptoService,
 	remoteService IRemoteSigningService,
 	signingService IRemoteSigningService,
-	config *models.Config,
+	config *config.Config,
 ) *EsignService {
 	return &EsignService{
 		repo:           repo,

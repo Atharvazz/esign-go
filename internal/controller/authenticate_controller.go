@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/esign-go/internal/config"
 	"github.com/esign-go/internal/service"
-
 	"github.com/esign-go/internal/middleware"
 	"github.com/esign-go/internal/models"
 	"github.com/esign-go/pkg/errors"
@@ -23,11 +23,12 @@ import (
 
 // AuthenticateController handles authentication endpoints
 type AuthenticateController struct {
-	esignService    service.IEsignService
-	kycService      service.IKYCService
-	templateService service.ITemplateService
-	sessionService  service.ISessionService
-	config          *models.Config
+	esignService     service.IEsignService
+	kycService       service.IKYCService
+	templateService  service.ITemplateService
+	sessionService   service.ISessionService
+	config           *config.Config
+	templateSelector *AuthTemplateSelector
 }
 
 // NewAuthenticateController creates a new authenticate controller
@@ -36,14 +37,15 @@ func NewAuthenticateController(
 	kycService service.IKYCService,
 	templateService service.ITemplateService,
 	sessionService service.ISessionService,
-	config *models.Config,
+	config *config.Config,
 ) *AuthenticateController {
 	return &AuthenticateController{
-		esignService:    esignService,
-		kycService:      kycService,
-		templateService: templateService,
-		sessionService:  sessionService,
-		config:          config,
+		esignService:     esignService,
+		kycService:       kycService,
+		templateService:  templateService,
+		sessionService:   sessionService,
+		config:           config,
+		templateSelector: NewAuthTemplateSelector(),
 	}
 }
 
@@ -53,7 +55,7 @@ func (ac *AuthenticateController) RegisterRoutes(router *gin.RouterGroup) {
 	{
 		// Apply rate limiting middleware with fallback
 		auth.POST("/esign-doc",
-			middleware.RateLimiterWithFallback("esign-doc", ac.config.RateLimit.EsignDoc, ac.RateLimiterFallbackForEsignDoc),
+			middleware.RateLimiterWithFallback("esign-doc", ac.config.RateLimit.EsignDoc.Rate, ac.RateLimiterFallbackForEsignDoc),
 			ac.EsignDoc)
 		auth.GET("/esign-doc", ac.EsignDocGet)
 		auth.GET("/auth-ra", ac.AuthRA)
@@ -66,10 +68,10 @@ func (ac *AuthenticateController) RegisterRoutes(router *gin.RouterGroup) {
 		auth.GET("/sigError", ac.SignatureError)
 		// Check status endpoints with rate limiting
 		auth.POST("/check-status",
-			middleware.RateLimiterWithFallback("check-status", ac.config.RateLimit.CheckStatus, ac.RateLimiterFallbackForCheckStatus),
+			middleware.RateLimiterWithFallback("check-status", ac.config.RateLimit.CheckStatus.Rate, ac.RateLimiterFallbackForCheckStatus),
 			ac.CheckStatus)
 		auth.POST("/check-status-api",
-			middleware.RateLimiterWithFallback("check-status", ac.config.RateLimit.CheckStatus, ac.RateLimiterFallbackForCheckStatus),
+			middleware.RateLimiterWithFallback("check-status", ac.config.RateLimit.CheckStatus.Rate, ac.RateLimiterFallbackForCheckStatus),
 			ac.CheckStatusAPI)
 		// Offline KYC endpoints
 		auth.POST("/okycOtp", ac.OkycOtp)
@@ -82,6 +84,29 @@ func (ac *AuthenticateController) RegisterRoutes(router *gin.RouterGroup) {
 		auth.POST("/esignCancelVer3", ac.CancelEsignVer3)
 		// Face recognition endpoint
 		auth.POST("/fcr", ac.FaceRecognition)
+
+		// New enhanced authentication routes
+		// API v2 routes for modern frontend
+		api := auth.Group("/api/v2")
+		{
+			api.POST("/auth/send-otp", ac.SendOTPAPI)
+			api.POST("/auth/verify-otp", ac.VerifyOTPAPI)
+			api.POST("/auth/biometric", ac.BiometricAuthAPI)
+			api.POST("/auth/offline-kyc", ac.OfflineKYCAPI)
+			api.GET("/cancel", ac.CancelRequestAPI)
+		}
+
+		// Template routes for different auth methods
+		auth.GET("/auth/biometric/fingerprint", ac.BiometricFingerprintView)
+		auth.GET("/auth/biometric/iris", ac.BiometricIrisView)
+		auth.GET("/auth/biometric", ac.BiometricSelectView)
+		auth.GET("/auth/offline-kyc", ac.OfflineKYCView)
+		auth.GET("/auth/otp", ac.OTPView)
+
+		// Success and error pages
+		auth.GET("/esign/success", ac.EsignSuccessView)
+		auth.GET("/esign/failed", ac.EsignFailedView)
+		auth.GET("/esign/expired", ac.EsignExpiredView)
 	}
 }
 
@@ -240,6 +265,7 @@ func (ac *AuthenticateController) EsignDoc(c *gin.Context) {
 			V3:            esignReq.V3,
 			Build:         ac.config.Build,
 			Adr:           adr,
+			BiometricEnv:  ac.config.BiometricEnv,
 			CreatedAt:     time.Now(),
 		}
 
@@ -315,39 +341,17 @@ func (ac *AuthenticateController) AuthRA(c *gin.Context) {
 
 	authMode := sessionData.AuthMode
 
-	// Determine view based on auth mode
-	var view string
-	templateData := gin.H{
-		"bioEnv":   ac.config.BiometricEnv,
-		"msg1":     sessionData.LegalName,
-		"sid":      sessionData.SignerID,
-		"msg3":     sessionData.TransactionID,
-		"msg4":     sessionData.Timestamp,
-		"ln":       sessionData.LegalName,
-		"v1":       sessionData.V1,
-		"v2":       sessionData.V2,
-		"v3":       sessionData.V3,
-		"rid":      sessionData.RequestID,
-		"authMod":  sessionData.AuthMode,
-		"build":    sessionData.Build,
-		"adr":      sessionData.Adr,
-		"cv_output": sessionData.CustomViewOutput,
-		"filler1":  sessionData.Filler1,
-		"filler2":  sessionData.Filler2,
-		"filler3":  sessionData.Filler3,
-		"filler4":  sessionData.Filler4,
-		"filler5":  sessionData.Filler5,
-	}
+	// Check for enhanced UX mode
+	useEnhancedUX := c.Query("ux") == "enhanced" || c.Query("ux") == "1"
 
-	switch authMode {
-	case "1":
-		view = "auth.html"
-	case "2":
-		view = "auth_biometric.html"
-	case "3":
-		view = "auth_biometric_iris.html"
-	default:
-		view = "authFail.html"
+	// Get appropriate template using selector
+	view := ac.templateSelector.GetAuthTemplate(authMode, sessionData.AspID, useEnhancedUX, c)
+
+	// Get template data with ASP-specific customizations
+	templateData := ac.templateSelector.GetTemplateData(sessionData, sessionData.AspID)
+
+	// Add any error message for invalid auth mode
+	if view == "authFail.html" && authMode != "1" && authMode != "2" && authMode != "3" && authMode != "4" {
 		templateData["msg"] = "Invalid authentication mode"
 	}
 
@@ -605,7 +609,7 @@ func (ac *AuthenticateController) trackRequest(c *gin.Context) string {
 		c.Set("RequestID", reqID)
 		return reqID
 	}
-	
+
 	// Parse ASP ID from XML
 	aspStart := strings.Index(msg, "aspId=")
 	if aspStart == -1 {
@@ -617,7 +621,7 @@ func (ac *AuthenticateController) trackRequest(c *gin.Context) string {
 		return uuid.New().String()
 	}
 	aspID := msg[aspStart : aspStart+aspEnd]
-	
+
 	// Parse Transaction ID from XML
 	txnStart := strings.Index(msg, "txn=")
 	if txnStart == -1 {
@@ -629,7 +633,7 @@ func (ac *AuthenticateController) trackRequest(c *gin.Context) string {
 		return aspID + ":" + fmt.Sprintf("%d", time.Now().Unix())
 	}
 	txnID := msg[txnStart : txnStart+txnEnd]
-	
+
 	// Return format: {ASP_ID}_{TXN_ID}:{timestamp}
 	reqID := fmt.Sprintf("%s_%s:%d", aspID, txnID, time.Now().UnixMilli())
 	c.Set("RequestID", reqID)
@@ -646,7 +650,6 @@ func (ac *AuthenticateController) getClientIP(c *gin.Context) string {
 	}
 	return c.ClientIP()
 }
-
 
 func (ac *AuthenticateController) validateLast4Digits(stored, input string) error {
 	if len(input) < 12 {
@@ -788,7 +791,7 @@ func (ac *AuthenticateController) populateKYC(kyc *models.AadhaarDetailsVO) *mod
 
 func (ac *AuthenticateController) generatePhotoHash(photo string) string {
 	log := logger.GetLogger()
-	
+
 	if photo == "" {
 		return ""
 	}
@@ -802,7 +805,7 @@ func (ac *AuthenticateController) generatePhotoHash(photo string) string {
 
 	// Calculate SHA-256 hash
 	hash := sha256.Sum256(photoData)
-	
+
 	// Convert to uppercase hex string
 	return strings.ToUpper(hex.EncodeToString(hash[:]))
 }
@@ -909,7 +912,7 @@ func (ac *AuthenticateController) esignRest(kid string, req *http.Request, kyc *
 	responseXML, err := ac.processEsignInternal(requestID, req, kyc)
 	if err != nil {
 		log.WithError(err).Error("Failed to process esign")
-		
+
 		// Generate error response
 		errorResp, _ := ac.esignService.GenerateSignedXMLResponse(
 			requestID,
@@ -1146,7 +1149,7 @@ func (ac *AuthenticateController) processBiometric(c *gin.Context, req *models.B
 	if esignReq.EsignRequest.AuthMode == "3" {
 		bioStatus = "BIOMETRIC_IRIS_VERIFIED"
 	}
-	
+
 	if err := ac.esignService.UpdateTransition(esignReq.RequestID, bioStatus); err != nil {
 		log.WithError(err).Error("Failed to update transition")
 	}
@@ -1247,10 +1250,10 @@ func (ac *AuthenticateController) generateWADH(isIris bool) string {
 		// For IRIS: version + "I" + flags
 		rawWADH = "2.5" + "I" + "Y" + "N" + "N" + "N"
 	} else {
-		// For Fingerprint: version + "F" + flags  
+		// For Fingerprint: version + "F" + flags
 		rawWADH = "2.5" + "F" + "Y" + "N" + "N" + "N"
 	}
-	
+
 	// Calculate SHA256 hash
 	hash := sha256.Sum256([]byte(rawWADH))
 	return hex.EncodeToString(hash[:])
@@ -1262,7 +1265,7 @@ func (ac *AuthenticateController) CheckStatus(c *gin.Context) {
 	log.Debug("inside checkStatus")
 
 	msg := c.PostForm("msg")
-	
+
 	// Check if ASP is authorized for check status
 	aspID := ac.extractAspIDFromXML(msg)
 	if !ac.isAuthorizedForCheckStatus(aspID) {
@@ -1285,7 +1288,7 @@ func (ac *AuthenticateController) CheckStatus(c *gin.Context) {
 // CheckStatusAPI handles check-status-api request with JSON response
 func (ac *AuthenticateController) CheckStatusAPI(c *gin.Context) {
 	log := logger.GetLogger()
-	
+
 	var model models.EsignStatusModel
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, models.EsignStatusVO{
@@ -1560,7 +1563,7 @@ func (ac *AuthenticateController) CancelEsignRedirect(c *gin.Context) {
 	// Process cancellation
 	clientIP := ac.getClientIP(c)
 	kyc := ac.convertKYCDTOToVO(&models.EsignKycDetailDTO{}) // Empty KYC for cancellation
-	
+
 	msg, err := ac.esignService.ProcessEsignRequest(esignReq, kyc, true, clientIP)
 	if err != nil {
 		log.WithError(err).Error("Failed to process esign cancellation")
@@ -1609,7 +1612,7 @@ func (ac *AuthenticateController) extractAspIDFromXML(xml string) string {
 
 func (ac *AuthenticateController) isAuthorizedForCheckStatus(aspID string) bool {
 	// Check against configured ASP list
-	for _, authorizedASP := range ac.config.CheckStatusASPs {
+	for _, authorizedASP := range ac.config.CheckStatus.AllowedASPs {
 		if authorizedASP == aspID {
 			return true
 		}
@@ -1633,7 +1636,7 @@ func (ac *AuthenticateController) RateLimiterFallbackForEsignDoc(c *gin.Context)
 
 	// Get message from request
 	msg := c.PostForm("msg")
-	
+
 	// Try to extract response URL from XML
 	responseURL := ac.extractResponseURLFromXML(msg)
 	if responseURL == "" {
@@ -1710,7 +1713,7 @@ func (ac *AuthenticateController) extractResponseURLFromXML(xml string) string {
 func (ac *AuthenticateController) OkycOtpView(c *gin.Context) {
 	log := logger.GetLogger()
 	log.Info("inside okycOtpView")
-	
+
 	c.HTML(http.StatusOK, "auth_okyc.html", gin.H{})
 }
 
@@ -1876,4 +1879,586 @@ func (ac *AuthenticateController) FaceRecognition(c *gin.Context) {
 			Msg:    "Face Match Failed",
 		})
 	}
+}
+
+// SendOTPAPI - Modern API endpoint for sending OTP
+func (ac *AuthenticateController) SendOTPAPI(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("SendOTPAPI called")
+
+	var req models.SendOTPAPIRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.APIResponse{
+			Success: false,
+			Message: "Invalid request format",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil || sessionData == nil {
+		c.JSON(http.StatusUnauthorized, models.APIResponse{
+			Success: false,
+			Message: "Session expired or invalid",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Call existing OTP generation logic
+	otpReq := models.OTPRequest{
+		RequestID: req.RID,
+		Aadhaar:   req.UID,
+	}
+
+	// Test request eligibility
+	esignReq, err := ac.esignService.TestEsignRequestEligibility(otpReq.RequestID)
+	if err != nil {
+		c.JSON(http.StatusOK, models.APIResponse{
+			Success: false,
+			Message: "Invalid esign request",
+			Data: map[string]interface{}{
+				"retryCount": 0,
+			},
+		})
+		return
+	}
+
+	// Check retry attempts
+	retryCount := ac.config.AuthAttempts - esignReq.OtpRetryAttempts
+	if retryCount <= 0 {
+		c.JSON(http.StatusOK, models.APIResponse{
+			Success: false,
+			Message: "You have exceeded Send/Resend OTP Limit. Please try again!",
+			Data: map[string]interface{}{
+				"retryCount": 0,
+			},
+		})
+		return
+	}
+
+	// Update retry attempt
+	if err := ac.esignService.UpdateRetryAttempt(esignReq.RequestID); err != nil {
+		log.WithError(err).Error("Failed to update retry attempt")
+	}
+
+	// Generate OTP
+	otpRes, err := ac.kycService.GenerateOTP(
+		req.UID,
+		esignReq.RequestID,
+		c.Request,
+		esignReq.Txn,
+		esignReq.AspID,
+		esignReq.OtpRetryAttempts,
+	)
+
+	if err != nil {
+		log.WithError(err).Error("Failed to generate OTP")
+		c.JSON(http.StatusOK, models.APIResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to send OTP. %d attempt(s) remaining.", retryCount),
+			Data: map[string]interface{}{
+				"retryCount": retryCount,
+			},
+		})
+		return
+	}
+
+	// Update transition status
+	if err := ac.esignService.UpdateTransition(esignReq.RequestID, models.StatusOTPSent); err != nil {
+		log.WithError(err).Error("Failed to update transition")
+	}
+
+	// Success response
+	c.JSON(http.StatusOK, models.APIResponse{
+		Success: true,
+		Message: "OTP sent successfully",
+		Data: map[string]interface{}{
+			"otpTxn":     otpRes.OtpTxn,
+			"retryCount": retryCount,
+		},
+	})
+}
+
+// VerifyOTPAPI - Modern API endpoint for verifying OTP
+func (ac *AuthenticateController) VerifyOTPAPI(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("VerifyOTPAPI called")
+
+	var req models.VerifyOTPAPIRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.APIResponse{
+			Success: false,
+			Message: "Invalid request format",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil || sessionData == nil {
+		c.JSON(http.StatusUnauthorized, models.APIResponse{
+			Success: false,
+			Message: "Session expired or invalid",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Test ESP link
+	if err := ac.esignService.TestESPLink(); err != nil {
+		c.JSON(http.StatusOK, models.APIResponse{
+			Success: false,
+			Message: "eSign service down. Please try after sometime",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Validate request eligibility
+	esignReq, err := ac.esignService.TestEsignRequestEligibility(req.RID)
+	if err != nil {
+		c.JSON(http.StatusOK, models.APIResponse{
+			Success: false,
+			Message: "Invalid esign request or request expired!",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Update authentication attempts
+	if err := ac.esignService.UpdateAuthAttempt(esignReq.RequestID); err != nil {
+		log.WithError(err).Error("Failed to update auth attempt")
+	}
+
+	retryCount := ac.config.AuthAttempts - (esignReq.AuthAttempts + 1)
+
+	// Verify OTP
+	kyc, err := ac.kycService.VerifyOTP(
+		req.OtpTxn,
+		req.OTP,
+		req.UID,
+		esignReq.RequestID,
+		c.Request,
+		esignReq.Txn,
+		esignReq.AspID,
+	)
+
+	if err != nil {
+		log.WithError(err).Error("OTP verification failed")
+		c.JSON(http.StatusOK, models.APIResponse{
+			Success: false,
+			Message: fmt.Sprintf("Invalid OTP! %d attempt(s) remaining.", retryCount),
+			Data: map[string]interface{}{
+				"retryCount": retryCount,
+			},
+		})
+		return
+	}
+
+	// Update KYC details
+	kycDetails := ac.populateKYC(kyc)
+	if err := ac.esignService.UpdateKYCDetails(esignReq.RequestID, kycDetails, models.StatusOTPVerified); err != nil {
+		log.WithError(err).Error("Failed to update KYC details")
+	}
+
+	// Process esign request
+	msg, err := ac.processEsignInternal(esignReq.RequestID, c.Request, kycDetails)
+	if err != nil {
+		log.WithError(err).Error("Failed to process esign")
+		c.JSON(http.StatusOK, models.APIResponse{
+			Success: false,
+			Message: "Failed to process esign request",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Success response
+	c.JSON(http.StatusOK, models.APIResponse{
+		Success: true,
+		Message: "OTP verified successfully",
+		Data: map[string]interface{}{
+			"redirectUrl": esignReq.ResponseURL,
+			"esignData":   msg,
+		},
+	})
+}
+
+// BiometricAuthAPI - API endpoint for biometric authentication
+func (ac *AuthenticateController) BiometricAuthAPI(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("BiometricAuthAPI called")
+
+	var req models.BiometricAuthAPIRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.APIResponse{
+			Success: false,
+			Message: "Invalid request format",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil || sessionData == nil {
+		c.JSON(http.StatusUnauthorized, models.APIResponse{
+			Success: false,
+			Message: "Session expired or invalid",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Test ESP link
+	if err := ac.esignService.TestESPLink(); err != nil {
+		c.JSON(http.StatusOK, models.APIResponse{
+			Success: false,
+			Message: "eSign service down. Please try after sometime",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Process biometric authentication
+	// Convert biometric data to XML format expected by the service
+	biometricXML := ""
+	if bioData, ok := req.BiometricData["data"].(string); ok {
+		biometricXML = bioData
+	}
+	
+	bioReq := models.BiometricRequest{
+		RequestID:    req.RID,
+		Aadhaar:      req.UID,
+		BiometricXML: biometricXML,
+		Request:      "sendBiometric",
+	}
+
+	// Reuse existing biometric processing logic
+	ac.processBiometric(c, &bioReq)
+}
+
+// OfflineKYCAPI - API endpoint for offline KYC
+func (ac *AuthenticateController) OfflineKYCAPI(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("OfflineKYCAPI called")
+
+	var req models.OfflineKYCAPIRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.APIResponse{
+			Success: false,
+			Message: "Invalid request format",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil || sessionData == nil {
+		c.JSON(http.StatusUnauthorized, models.APIResponse{
+			Success: false,
+			Message: "Session expired or invalid",
+			Data:    nil,
+		})
+		return
+	}
+
+	// For offline KYC, we need to handle the XML file upload and share code verification
+	// This is a simplified implementation - in production, you'd need to handle the actual offline KYC flow
+	
+	// Validate request eligibility
+	esignReq, err := ac.esignService.TestEsignRequestEligibility(req.RID)
+	if err != nil {
+		c.JSON(http.StatusOK, models.APIResponse{
+			Success: false,
+			Message: "Invalid esign request",
+			Data:    nil,
+		})
+		return
+	}
+	
+	// Process offline KYC XML
+	// In a real implementation, this would:
+	// 1. Decrypt the offline XML using the share code
+	// 2. Validate the XML signature
+	// 3. Extract KYC data
+	// 4. Process the authentication
+	
+	// For now, return a mock success response
+	c.JSON(http.StatusOK, models.APIResponse{
+		Success: true,
+		Message: "Offline KYC processed successfully",
+		Data: map[string]interface{}{
+			"status": "SUCCESS",
+			"txnId":  esignReq.Txn,
+		},
+	})
+}
+
+// CancelRequestAPI - API endpoint for cancelling requests
+func (ac *AuthenticateController) CancelRequestAPI(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("CancelRequestAPI called")
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil || sessionData == nil {
+		c.JSON(http.StatusUnauthorized, models.APIResponse{
+			Success: false,
+			Message: "Session expired or invalid",
+			Data:    nil,
+		})
+		return
+	}
+
+	cancelReason := c.Query("reason")
+	if cancelReason == "" {
+		cancelReason = "User cancelled the request"
+	}
+
+	// Get request details
+	esignReq, err := ac.esignService.GetRequestDetailWithKYC(sessionData.RequestID)
+	if err != nil || esignReq == nil {
+		c.JSON(http.StatusBadRequest, models.APIResponse{
+			Success: false,
+			Message: "Request not found",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Update request with cancel reason
+	esignReq.CancelReason = cancelReason
+	ipAddress := ac.getClientIP(c)
+
+	// Generate cancel response
+	responseXML, err := ac.esignService.GenerateSignedXMLResponse(
+		sessionData.RequestID,
+		"ESP-201",
+		"Request cancelled by user",
+		models.StatusCancelled,
+		esignReq.Txn,
+		"201",
+		ipAddress,
+	)
+
+	if err != nil {
+		log.WithError(err).Error("Failed to generate cancel response")
+		c.JSON(http.StatusInternalServerError, models.APIResponse{
+			Success: false,
+			Message: "Failed to process cancellation",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Send response to ASP
+	if esignReq.ResponseURL != "" {
+		go ac.esignService.SendResponseToASP(esignReq.ResponseURL, responseXML)
+	}
+
+	c.JSON(http.StatusOK, models.APIResponse{
+		Success: true,
+		Message: "Request cancelled successfully",
+		Data: map[string]interface{}{
+			"redirectUrl": esignReq.ResponseURL,
+		},
+	})
+}
+
+// BiometricFingerprintView - View handler for fingerprint auth
+func (ac *AuthenticateController) BiometricFingerprintView(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("BiometricFingerprintView called")
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil || sessionData == nil {
+		c.HTML(http.StatusBadRequest, "authFail.html", gin.H{
+			"msg": "Session expired or invalid",
+		})
+		return
+	}
+
+	// Get template using selector
+	template := ac.templateSelector.GetAuthTemplate("2", sessionData.AspID, true, c)
+	templateData := ac.templateSelector.GetTemplateData(sessionData, sessionData.AspID)
+
+	// Add biometric specific data
+	templateData["biometricType"] = "fingerprint"
+	templateData["wadh"] = ac.generateWADH(false)
+	templateData["consentText"] = ac.config.ConsentText
+
+	c.HTML(http.StatusOK, template, templateData)
+}
+
+// BiometricIrisView - View handler for iris auth
+func (ac *AuthenticateController) BiometricIrisView(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("BiometricIrisView called")
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil || sessionData == nil {
+		c.HTML(http.StatusBadRequest, "authFail.html", gin.H{
+			"msg": "Session expired or invalid",
+		})
+		return
+	}
+
+	// Get template using selector
+	template := ac.templateSelector.GetAuthTemplate("3", sessionData.AspID, true, c)
+	templateData := ac.templateSelector.GetTemplateData(sessionData, sessionData.AspID)
+
+	// Add biometric specific data
+	templateData["biometricType"] = "iris"
+	templateData["wadh"] = ac.generateWADH(true)
+	templateData["consentText"] = ac.config.ConsentText
+
+	c.HTML(http.StatusOK, template, templateData)
+}
+
+// BiometricSelectView - View handler for biometric selection
+func (ac *AuthenticateController) BiometricSelectView(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("BiometricSelectView called")
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil || sessionData == nil {
+		c.HTML(http.StatusBadRequest, "authFail.html", gin.H{
+			"msg": "Session expired or invalid",
+		})
+		return
+	}
+
+	// Get template using selector
+	template := ac.templateSelector.GetAuthTemplate("2", sessionData.AspID, true, c)
+	templateData := ac.templateSelector.GetTemplateData(sessionData, sessionData.AspID)
+
+	c.HTML(http.StatusOK, template, templateData)
+}
+
+// OfflineKYCView - View handler for offline KYC
+func (ac *AuthenticateController) OfflineKYCView(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("OfflineKYCView called")
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil || sessionData == nil {
+		c.HTML(http.StatusBadRequest, "authFail.html", gin.H{
+			"msg": "Session expired or invalid",
+		})
+		return
+	}
+
+	// Get template using selector
+	useEnhancedUX := c.Query("ux") == "enhanced" || c.Query("ux") == "1"
+	template := ac.templateSelector.GetAuthTemplate("4", sessionData.AspID, useEnhancedUX, c)
+	templateData := ac.templateSelector.GetTemplateData(sessionData, sessionData.AspID)
+
+	c.HTML(http.StatusOK, template, templateData)
+}
+
+// OTPView - View handler for OTP auth
+func (ac *AuthenticateController) OTPView(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("OTPView called")
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil || sessionData == nil {
+		c.HTML(http.StatusBadRequest, "authFail.html", gin.H{
+			"msg": "Session expired or invalid",
+		})
+		return
+	}
+
+	// Get template using selector
+	useEnhancedUX := c.Query("ux") == "enhanced" || c.Query("ux") == "1"
+	template := ac.templateSelector.GetAuthTemplate("1", sessionData.AspID, useEnhancedUX, c)
+	templateData := ac.templateSelector.GetTemplateData(sessionData, sessionData.AspID)
+
+	c.HTML(http.StatusOK, template, templateData)
+}
+
+// EsignSuccessView - Success page handler
+func (ac *AuthenticateController) EsignSuccessView(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("EsignSuccessView called")
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil {
+		// Even without session, show success page
+		c.HTML(http.StatusOK, "esign-success.html", gin.H{
+			"message": "eSign completed successfully",
+		})
+		return
+	}
+
+	// Get template using selector
+	template := ac.templateSelector.GetSuccessTemplate(sessionData.AspID, true)
+	templateData := ac.templateSelector.GetTemplateData(sessionData, sessionData.AspID)
+	templateData["message"] = "eSign completed successfully"
+
+	c.HTML(http.StatusOK, template, templateData)
+}
+
+// EsignFailedView - Failed page handler
+func (ac *AuthenticateController) EsignFailedView(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("EsignFailedView called")
+
+	errorMsg := c.Query("error")
+	if errorMsg == "" {
+		errorMsg = "eSign process failed"
+	}
+
+	// Get session data
+	sessionData, err := ac.sessionService.GetSessionData(c)
+	if err != nil {
+		// Even without session, show error page
+		c.HTML(http.StatusOK, "esign-failed.html", gin.H{
+			"error": errorMsg,
+		})
+		return
+	}
+
+	// Get template using selector
+	template := ac.templateSelector.GetErrorTemplate("failed", sessionData.AspID)
+	templateData := ac.templateSelector.GetTemplateData(sessionData, sessionData.AspID)
+	templateData["error"] = errorMsg
+
+	c.HTML(http.StatusOK, template, templateData)
+}
+
+// EsignExpiredView - Expired page handler
+func (ac *AuthenticateController) EsignExpiredView(c *gin.Context) {
+	log := logger.GetLogger()
+	log.Info("EsignExpiredView called")
+
+	// Get session data if available
+	sessionData, _ := ac.sessionService.GetSessionData(c)
+
+	var template string
+	var templateData gin.H
+
+	if sessionData != nil {
+		template = ac.templateSelector.GetErrorTemplate("expired", sessionData.AspID)
+		templateData = ac.templateSelector.GetTemplateData(sessionData, sessionData.AspID)
+	} else {
+		template = "authExpired.html"
+		templateData = gin.H{}
+	}
+
+	templateData["message"] = "Your eSign session has expired"
+
+	c.HTML(http.StatusOK, template, templateData)
 }
